@@ -10,7 +10,7 @@ namespace AquaScape
     {
         public int zone;
         public Transform visual;
-        public float pickupRadius = 0.7f;
+        public float pickupRadius = 0.9f;
 
         void Update()
         {
