@@ -21,6 +21,9 @@ namespace AquaScape
         [Range(0f, 1f)] public float dayAlpha = 0.6f;
         [Range(0f, 1f)] public float nightAlpha = 0.25f;
 
+        [Tooltip("The sprite to animate (not the ground shadow).")]
+        public SpriteRenderer body;
+
         [Header("Air only")]
         public float hoverHeight = 2.2f;
         public Transform shadow;
@@ -31,7 +34,7 @@ namespace AquaScape
 
         void Start()
         {
-            _sr = GetComponentInChildren<SpriteRenderer>();
+            _sr = body != null ? body : GetComponentInChildren<SpriteRenderer>();
             _pos = transform.position;
             _phase = Random.value * 10f;
             PickTarget();

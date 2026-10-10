@@ -147,7 +147,7 @@ objects(
 # 3. MOONPOOL  (x 80-119) - night, lanterns, drifting jellyfish, the exit
 # =============================================================================
 rect(87, 15, 90, 17, '=')               # landing -> moon island
-rect(104, 9, 105, 11, '=')              # moon island -> exit islet
+rect(104, 6, 105, 11, '=')              # moon island -> exit islet
 
 ellipse(84.5, 16.5, 4.0, 4.2, 'g')      # landing island
 ellipse(97.5, 16.5, 9.0, 7.2, 'g')      # moon island
