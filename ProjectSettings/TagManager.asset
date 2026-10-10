@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags: []
   layers:
   - Default
@@ -41,3 +41,24 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Water
+    uniqueID: 368335737
+    locked: 0
+  - name: Underwater
+    uniqueID: 312505309
+    locked: 0
+  - name: Ground
+    uniqueID: 2024493761
+    locked: 0
+  - name: Objects
+    uniqueID: 1799324542
+    locked: 0
+  - name: FX
+    uniqueID: 1910301108
+    locked: 0
+  - name: Overhead
+    uniqueID: 1474483878
+    locked: 0
+  m_RenderingLayers:
+  - Default
+  m_MigratedRenderPipelines: []

@@ -1,0 +1,34 @@
+{
+  "UI/panel.png": {
+    "border": [
+      48,
+      48,
+      48,
+      48
+    ]
+  },
+  "UI/button.png": {
+    "border": [
+      48,
+      44,
+      48,
+      44
+    ]
+  },
+  "UI/button_hover.png": {
+    "border": [
+      48,
+      44,
+      48,
+      44
+    ]
+  },
+  "UI/pill.png": {
+    "border": [
+      36,
+      36,
+      36,
+      36
+    ]
+  }
+}

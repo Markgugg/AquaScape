@@ -1,0 +1,20 @@
+AquaScape - Audio Credits
+=========================
+
+All audio in this folder (music stems, jingle, ambience loops and every sound effect) was
+procedurally synthesized for this project. No samples, sample libraries, recordings or
+third-party audio assets were used.
+
+Everything is generated from code by the Python 3 + numpy scripts in Tools/AudioGen:
+
+  synth.py          DSP toolkit: oscillators, envelopes, FFT/STFT filters, convolution reverb
+                    (synthetic impulse responses), chorus, ping-pong delay, instruments
+  make_music.py     adaptive music stems (Music/music_*.wav) + Music/jingle_complete.wav
+  make_ambience.py  ambience loops (Music/amb_*.wav)
+  make_sfx.py       all sound effects (SFX/*.wav)
+  check_audio.py    level / DC / loop-seam checks and spectrograms
+
+To regenerate:  cd Tools/AudioGen && python3 make_music.py && python3 make_ambience.py && python3 make_sfx.py
+
+Music: D major pentatonic, 84 BPM, 4/4. Every music stem is an 8-bar loop of exactly
+1,008,000 samples (22.857 s at 44.1 kHz), and all stems play in sync.

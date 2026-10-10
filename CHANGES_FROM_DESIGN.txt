@@ -1,0 +1,63 @@
+AquaScape - Changes from the One-Page Design Document
+======================================================
+
+Original design (one-pager)
+---------------------------
+A short, relaxing 2D side-scrolling platform hopper in a Y2K / Frutiger Aero
+world. The chrome explorer ran automatically to the right (Jetpack Joyride
+style) and the player pressed Space to jump / double-jump between floating
+platforms, collecting bubbles, with checkpoints and a finish area. One level
+moving through three looks: Blue Lagoon -> Glass City -> Moonpool.
+
+What changed and why
+--------------------
+1. Genre: auto-running side-scroller  ->  top-down tiled exploration game.
+   While prototyping I wanted the player to be able to slow down and actually
+   look around the world, which an auto-runner doesn't allow. A top-down map
+   made of tiles lets you explore at your own pace. It also gave me room for
+   more interesting mechanics than "jump at the right time".
+
+2. Jump / double jump  ->  Aqua Pulse + Dash.
+   Jumping doesn't fit a top-down view, so the main verb became the "Aqua
+   Pulse" (Space): an expanding ring that interacts with the world. It opens
+   bubble clams, powers bridge pylons, lights beacons and lanterns, pushes
+   glass cubes, and repels jellyfish. Shift is a short dash that also makes
+   you briefly safe from jellyfish.
+
+3. Checkpoints / falling  ->  no failure state, gentle hazards instead.
+   Without falling there's nothing to respawn from. To keep the calm mood the
+   only hazard is the Moonpool jellyfish: touching one bumps you back and
+   knocks a few bubbles loose, and you can pick them back up.
+
+4. Linear run  ->  an objective per area.
+   Each area has a Prism Shard to find and a Beacon to light with it.
+   Lighting a beacon builds a glass bridge to the next area:
+     - Blue Lagoon: pulse a pylon to build a bridge to the shard's islet.
+     - Glass City: a sliding-cube puzzle. Pulsed cubes slide until they hit
+       something, and you have to land them on two pressure pads to open the
+       glass gate in front of the shard. A cube pushed against a wall twice
+       resets, so the puzzle can't soft-lock.
+     - Moonpool: light three moon lanterns to raise the path to the shard
+       while avoiding the drifting jellyfish. The last beacon awakens the
+       Moonpool exit, which ends the level.
+
+5. Music is adaptive instead of a single background loop.
+   The soundtrack is made of synced stems (pad, keys, arpeggio, melody, plus a
+   night pad). A new layer fades in each time a beacon is lit, and the pad
+   crossfades to the night version in the Moonpool. Bubble pickups climb a
+   pentatonic scale in the music's key when collected in a row. Footsteps
+   change sound depending on the surface (grass, ceramic plaza, glass).
+
+6. Same scene, three areas, as planned.
+   The three areas are still one continuous level in one scene. Global
+   lighting, water colours, ambient particles, ambience loops and music all
+   blend gradually from area to area based on the camera position.
+
+Unchanged
+---------
+- Y2K / Frutiger Aero chrome-and-glass art direction and the chrome explorer.
+- Bubbles as the collectible, with a counter in the HUD.
+- Title screen, pause menu and level-complete screen (with time, bubbles and
+  a star rating).
+- One short, hand-designed level (Tools/LevelGen/level.py ->
+  Assets/AquaScape/Level/level.txt).

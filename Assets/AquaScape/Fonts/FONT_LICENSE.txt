@@ -1,0 +1,3 @@
+M PLUS Rounded 1c by Coji Morishita / M+ Fonts Project.
+Source: https://github.com/google/fonts/tree/main/ofl/mplusrounded1c
+Licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).

@@ -1,0 +1,208 @@
+{
+  "Props/arch.png": {
+    "pivot": [
+      0.5,
+      0.0643
+    ]
+  },
+  "Props/beacon_off.png": {
+    "pivot": [
+      0.5,
+      0.112
+    ]
+  },
+  "Props/beacon_on.png": {
+    "pivot": [
+      0.5,
+      0.112
+    ]
+  },
+  "Props/bubble_clam_closed.png": {
+    "pivot": [
+      0.5,
+      0.16
+    ]
+  },
+  "Props/bubble_clam_open.png": {
+    "pivot": [
+      0.5,
+      0.1263
+    ]
+  },
+  "Props/bush_1.png": {
+    "pivot": [
+      0.5,
+      0.1
+    ]
+  },
+  "Props/bush_2.png": {
+    "pivot": [
+      0.5,
+      0.1
+    ]
+  },
+  "Props/cube.png": {
+    "pivot": [
+      0.5,
+      0.1263
+    ]
+  },
+  "Props/fern_1.png": {
+    "pivot": [
+      0.5,
+      0.0933
+    ]
+  },
+  "Props/flowers_1.png": {
+    "pivot": [
+      0.5,
+      0.1071
+    ]
+  },
+  "Props/flowers_2.png": {
+    "pivot": [
+      0.5,
+      0.1071
+    ]
+  },
+  "Props/gate.png": {
+    "pivot": [
+      0.5,
+      0.069
+    ]
+  },
+  "Props/lamp.png": {
+    "pivot": [
+      0.5,
+      0.0831
+    ]
+  },
+  "Props/lantern_off.png": {
+    "pivot": [
+      0.5,
+      0.0872
+    ]
+  },
+  "Props/lantern_on.png": {
+    "pivot": [
+      0.5,
+      0.0872
+    ]
+  },
+  "Props/nightflower.png": {
+    "pivot": [
+      0.5,
+      0.1029
+    ]
+  },
+  "Props/pad_off.png": {
+    "pivot": [
+      0.5,
+      0.5161
+    ]
+  },
+  "Props/pad_on.png": {
+    "pivot": [
+      0.5,
+      0.5161
+    ]
+  },
+  "Props/palm_1.png": {
+    "pivot": [
+      0.415,
+      0.0489
+    ]
+  },
+  "Props/palm_2.png": {
+    "pivot": [
+      0.6,
+      0.0489
+    ]
+  },
+  "Props/portal_off.png": {
+    "pivot": [
+      0.5,
+      0.4
+    ]
+  },
+  "Props/portal_on.png": {
+    "pivot": [
+      0.5,
+      0.4
+    ]
+  },
+  "Props/pylon_off.png": {
+    "pivot": [
+      0.5,
+      0.1118
+    ]
+  },
+  "Props/pylon_on.png": {
+    "pivot": [
+      0.5,
+      0.1118
+    ]
+  },
+  "Props/rock_1.png": {
+    "pivot": [
+      0.5,
+      0.1
+    ]
+  },
+  "Props/rock_2.png": {
+    "pivot": [
+      0.5,
+      0.125
+    ]
+  },
+  "Props/shard.png": {
+    "pivot": [
+      0.5,
+      0.1143
+    ]
+  },
+  "Props/spire_1.png": {
+    "pivot": [
+      0.5,
+      0.0817
+    ]
+  },
+  "Props/spire_2.png": {
+    "pivot": [
+      0.5,
+      0.0817
+    ]
+  },
+  "UI/button.png": {
+    "border": [
+      48,
+      44,
+      48,
+      44
+    ]
+  },
+  "UI/button_hover.png": {
+    "border": [
+      48,
+      44,
+      48,
+      44
+    ]
+  },
+  "UI/panel.png": {
+    "border": [
+      48,
+      48,
+      48,
+      48
+    ]
+  },
+  "UI/pill.png": {
+    "border": [
+      36,
+      36,
+      36,
+      36
+    ]
+  }
+}

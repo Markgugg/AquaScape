@@ -33,3 +33,8 @@
 *.apk
 *.aab
 *.app
+
+# Local screenshots / Unity crash recovery
+Captures/
+[Aa]ssets/_Recovery/
+[Aa]ssets/_Recovery.meta
