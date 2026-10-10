@@ -36,10 +36,13 @@ Material:
     - _CausticStrength: 0.32
     - _FoamStrength: 0.85
     - _GlintStrength: 0.9
+    - _HorizonY: 34.5
     m_Colors:
     - _DeepCity: {r: 0.02, g: 0.56, b: 0.9, a: 1}
     - _DeepLagoon: {r: 0, g: 0.6399999, b: 0.82, a: 1}
     - _DeepNight: {r: 0.049999982, g: 0.059999965, b: 0.25999996, a: 1}
+    - _HazeDay: {r: 0.62, g: 0.9, b: 0.97999996, a: 1}
+    - _HazeNight: {r: 0.09999997, g: 0.11999995, b: 0.37999994, a: 1}
     - _MaskRect: {r: 0, g: 0, b: 1, a: 1}
     - _ShallowCity: {r: 0.45, g: 0.9, b: 1, a: 1}
     - _ShallowLagoon: {r: 0.41999996, g: 0.96, b: 0.93, a: 1}

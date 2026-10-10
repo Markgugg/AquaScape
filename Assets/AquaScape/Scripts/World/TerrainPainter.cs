@@ -125,7 +125,7 @@ namespace AquaScape
             if (mask == 15 && variants != null && variants.Length > 0)
             {
                 // deterministic per-cell hash; plain tiles stay the most common
-                int h = Mathf.Abs((d.x * 73856093) ^ (d.y * 19349663)) % (variants.Length * 5);
+                int h = Mathf.Abs((d.x * 73856093) ^ (d.y * 19349663)) % (variants.Length * 10);
                 if (h < variants.Length) return variants[h];
             }
             return Tiles(layer)[mask];

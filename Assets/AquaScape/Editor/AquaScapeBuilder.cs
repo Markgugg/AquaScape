@@ -68,6 +68,7 @@ namespace AquaScape.EditorTools
 
             PlaceLevelObjects(prefabs, terrain);
             BuildAmbience(fx);
+            BuildScenery();
             BuildManagers(prefabs, fx);
             BuildUI();
 
@@ -296,7 +297,7 @@ namespace AquaScape.EditorTools
             var data = go.AddComponent<UniversalAdditionalCameraData>();
             data.renderPostProcessing = true;
             var follow = go.AddComponent<AquaScape.CameraFollow>();
-            follow.bounds = new Rect(-3, -2.5f, s_w + 6, s_h + 5);
+            follow.bounds = new Rect(-3, -2.5f, s_w + 6, HorizonY + 9f + 2.5f);
             follow.titleFrom = new Vector2(8, 17);
             follow.titleTo = new Vector2(24, 15);
             return go;
@@ -319,7 +320,7 @@ namespace AquaScape.EditorTools
             {
                 new AquaScape.ZoneDirector.ZoneLook { title = "Blue Lagoon", subtitle = "Bright & peaceful", lightColor = new Color(1f, 0.99f, 0.96f), lightIntensity = 1.0f },
                 new AquaScape.ZoneDirector.ZoneLook { title = "Glass City", subtitle = "Futuristic & clean", lightColor = new Color(0.96f, 0.99f, 1.06f), lightIntensity = 1.04f },
-                new AquaScape.ZoneDirector.ZoneLook { title = "Moonpool", subtitle = "Dreamy & night", lightColor = new Color(0.46f, 0.47f, 0.98f), lightIntensity = 0.5f },
+                new AquaScape.ZoneDirector.ZoneLook { title = "Moonpool", subtitle = "Dreamy & night", lightColor = new Color(0.42f, 0.42f, 1.0f), lightIntensity = 0.42f },
             };
 
             // ambient particles that follow the camera

@@ -36,7 +36,7 @@ namespace AquaScape.EditorTools
             importer.filterMode = FilterMode.Bilinear;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.alphaIsTransparency = true;
-            importer.mipmapEnabled = rel.StartsWith("FX/cloud") || rel.StartsWith("Props/");
+            importer.mipmapEnabled = rel.StartsWith("FX/cloud") || rel.StartsWith("Props/") || rel.StartsWith("Backgrounds/backdrop") || rel.StartsWith("Scenery/");
             importer.wrapMode = TextureWrapMode.Clamp;
             importer.maxTextureSize = 4096;
 

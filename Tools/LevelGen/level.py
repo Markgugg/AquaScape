@@ -71,7 +71,6 @@ ellipse(8.0, 5.5, 4.2, 3.2, 'g')        # south-west cove
 ellipse(30.0, 4.5, 4.3, 2.9, 'g')       # shard islet (reached by bridge 1)
 ellipse(30.0, 4.6, 1.8, 1.2, '#', LAND)
 ellipse(9.5, 28.5, 2.6, 2.0, 'g')       # decorative islets
-ellipse(33.5, 27.5, 3.0, 2.2, 'g')
 ellipse(34.5, 11.5, 1.8, 1.5, 'g')
 
 rect(26, 6, 27, 12, '1', '.')           # bridge 1 (pylon) main -> shard islet
@@ -97,7 +96,7 @@ objects(
     # shard islet
     (30, 5, 'S'), (28, 4, 'o'), (32, 4, 'o'), (27, 3, 'T'), (33, 3, 't'), (31, 6, 'f'),
     # decor islets
-    (9, 29, 'T'), (33, 28, 'T'), (35, 27, 't'), (34, 11, 'T'),
+    (9, 29, 'T'), (34, 11, 'T'),
 )
 
 # =============================================================================

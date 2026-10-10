@@ -25,6 +25,9 @@ Shader "AquaScape/Water"
         _CausticStrength ("Caustic Strength", Float) = 0.32
         _GlintStrength ("Sun Glint Strength", Float) = 0.9
         _FoamStrength ("Foam Strength", Float) = 0.85
+        _HorizonY ("Horizon World Y", Float) = 34.5
+        _HazeDay ("Horizon Haze - Day", Color) = (0.62, 0.9, 0.98, 1)
+        _HazeNight ("Horizon Haze - Night", Color) = (0.1, 0.12, 0.38, 1)
     }
 
     SubShader
@@ -63,7 +66,8 @@ Shader "AquaScape/Water"
             CBUFFER_START(UnityPerMaterial)
                 float4 _MaskRect;
                 half4 _DeepLagoon, _ShallowLagoon, _DeepCity, _ShallowCity, _DeepNight, _ShallowNight;
-                float _CausticStrength, _GlintStrength, _FoamStrength;
+                float _CausticStrength, _GlintStrength, _FoamStrength, _HorizonY;
+                half4 _HazeDay, _HazeNight;
             CBUFFER_END
 
             // set every frame by ZoneDirector
@@ -197,6 +201,10 @@ Shader "AquaScape/Water"
                 float2 bf = frac(wp * 1.3 + float2(t * 0.05, 0)) - 0.5 - (hash22(bc) - 0.5) * 0.6;
                 float bio = smoothstep(0.12, 0.0, length(bf)) * step(0.88, bh) * (0.5 + 0.5 * sin(t * 1.3 + bh * 30.0));
                 col += z2 * (star * float3(0.85, 0.9, 1.0) * 1.2 + bio * float3(0.3, 0.95, 1.0) * 0.6);
+
+                // fade into a bright haze toward the far horizon (north edge)
+                float haze = smoothstep(_HorizonY - 7.0, _HorizonY + 0.5, wp.y);
+                col = lerp(col, lerp(_HazeDay.rgb, _HazeNight.rgb, z2), haze * 0.8);
 
                 // guard against NaNs reaching bloom
                 if (any(isnan(col)) || any(isinf(col))) col = deep;

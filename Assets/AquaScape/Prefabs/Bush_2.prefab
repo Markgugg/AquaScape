@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5370103529246007439}
   - component: {fileID: 996620020086366846}
+  - component: {fileID: 8476389295282347250}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -92,6 +93,20 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 1
   m_BlendShapeWeights: []
+--- !u!114 &8476389295282347250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997124452703374817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b870f05e13c814f22ac3c11591d41c3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AquaScape.WindSway
+  degrees: 1.2
+  speed: 1.3
 --- !u!1 &8001051774109321483
 GameObject:
   m_ObjectHideFlags: 0

@@ -93,6 +93,7 @@ namespace AquaScape
 
         void OnStateChanged(GameState s)
         {
+            RefreshHud();
             Show(_title, s == GameState.Title);
             Show(_hud, s == GameState.Playing || s == GameState.Paused);
             Show(_pause, s == GameState.Paused);
@@ -257,7 +258,7 @@ namespace AquaScape
             canvas.sortingOrder = 100;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.referenceResolution = new Vector2(2500, 1406);   // ~75% size: let the scenery breathe
             scaler.matchWidthOrHeight = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
             var root = (RectTransform)transform;
@@ -278,7 +279,8 @@ namespace AquaScape
 
             var obj = Img("Objective", _hud.transform, pillSprite, new Vector2(760, 70), new Vector2(0.5f, 1), new Vector2(0, -75));
             obj.type = Image.Type.Sliced;
-            obj.color = new Color(1, 1, 1, 0.85f);
+            obj.color = new Color(1, 1, 1, 0.6f);
+            pill.color = beacons.color = new Color(1, 1, 1, 0.7f);
             _objectiveText = Text("Text", obj.transform, "", 30, textDark, new Vector2(720, 60), new Vector2(0.5f, 0.5f), Vector2.zero, TextAlignmentOptions.Center);
 
             // toast (centre-top) and hint (bottom)

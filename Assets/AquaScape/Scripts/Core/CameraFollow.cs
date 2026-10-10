@@ -18,6 +18,9 @@ namespace AquaScape
         public float lookAhead = 1.2f;
         [Tooltip("World-space rectangle the camera view must stay inside.")]
         public Rect bounds = new Rect(0, 0, 120, 32);
+        [Tooltip("Above this world y the camera starts lifting to show the horizon.")]
+        public float horizonLiftStart = 23f;
+        public float horizonLift = 3.5f;
 
         [Header("Title screen pan")]
         public Vector2 titleFrom = new Vector2(8, 14);
@@ -73,6 +76,9 @@ namespace AquaScape
                 Vector2 lookTarget = Vector2.ClampMagnitude(vel * 0.25f, 1f) * lookAhead;
                 _look = Vector2.Lerp(_look, lookTarget, Time.deltaTime * 2.5f);
                 desired = (Vector2)target.position + _look + Vector2.up * 0.4f;
+                // near the north shore, lift the view so the distant horizon is visible
+                float lift = Mathf.Clamp01((target.position.y - horizonLiftStart) / 6f);
+                desired.y += Mathf.SmoothStep(0f, 1f, lift) * horizonLift;
             }
             else return;
 

@@ -37,16 +37,16 @@ namespace AquaScape
         void Awake()
         {
             Instance = this;
+            // Every bubble that can ever be collected counts toward the total
+            // (loose bubbles plus the ones hidden inside clams). Counted in
+            // Awake so the HUD sees the right number in its Start.
+            TotalBubbles = FindObjectsByType<Bubble>().Length;
+            foreach (var clam in FindObjectsByType<BubbleClam>())
+                TotalBubbles += clam.BubbleCount;
         }
 
         void Start()
         {
-            // Every bubble that can ever be collected counts toward the total
-            // (loose bubbles plus the ones hidden inside clams).
-            TotalBubbles = FindObjectsByType<Bubble>().Length;
-            foreach (var clam in FindObjectsByType<BubbleClam>())
-                TotalBubbles += clam.BubbleCount;
-
             SetState(s_skipTitle ? GameState.Playing : GameState.Title);
             s_skipTitle = false;
         }

@@ -239,7 +239,7 @@ namespace AquaScape.EditorTools
             p.decor['l'] = new[] { Decor("Lamp", "Props/lamp", 0.14f, new Color(0.7f, 0.97f, 1f), 1.75f) };
             p.decor['k'] = new[] { Decor("Spire_1", "Props/spire_1", 0.4f), Decor("Spire_2", "Props/spire_2", 0.4f) };
             p.decor['A'] = new[] { Decor("Arch", "Props/arch", 0f) };
-            p.decor['n'] = new[] { Decor("NightFlower", "Props/nightflower", 0f, new Color(0.55f, 0.8f, 1f), 0.5f) };
+            p.decor['n'] = new[] { Decor("NightFlower", "Props/nightflower", 0f, new Color(0.6f, 0.6f, 1f), 0.5f) };
 
             // ---- bubble
             {
@@ -270,6 +270,7 @@ namespace AquaScape.EditorTools
                 Collider(go, 0.3f);
                 var py = go.AddComponent<AquaScape.BridgePylon>();
                 py.sprite = sr;
+                Reflect(go.transform, sr);
                 py.onSprite = LoadSprite("Props/pylon_on");
                 py.glow = PointLight(go.transform, new Vector3(0, 1.3f, 0), new Color(0.75f, 0.9f, 1f), 1.8f, 0.25f);
                 py.promptOffset = new Vector3(0, 2.1f, 0);
@@ -282,6 +283,7 @@ namespace AquaScape.EditorTools
                 Collider(go, 0.65f);
                 var bc = go.AddComponent<AquaScape.Beacon>();
                 bc.sprite = sr;
+                Reflect(go.transform, sr);
                 bc.litSprite = LoadSprite("Props/beacon_on");
                 bc.glow = PointLight(go.transform, new Vector3(0, 2.5f, 0), new Color(0.55f, 0.95f, 1f), 6f, 0.4f);
                 var spark = (ParticleSystem)PrefabUtility.InstantiatePrefab(fx.beaconSparkles, go.transform);
@@ -343,6 +345,7 @@ namespace AquaScape.EditorTools
                 Collider(go, 0.2f);
                 var l = go.AddComponent<AquaScape.MoonLantern>();
                 l.sprite = sr;
+                Reflect(go.transform, sr);
                 l.litSprite = LoadSprite("Props/lantern_on");
                 l.glow = PointLight(go.transform, new Vector3(0, 1.5f, 0), new Color(0.75f, 0.75f, 1f), 4f, 0f);
                 l.promptOffset = new Vector3(0, 2.4f, 0);
@@ -379,10 +382,30 @@ namespace AquaScape.EditorTools
         static GameObject Decor(string name, string sprite, float colliderRadius, Color? glowColor = null, float glowHeight = 0f)
         {
             var go = new GameObject(name);
-            SpriteChild(go.transform, "Visual", sprite, "Objects", Vector3.zero);
+            var vis = SpriteChild(go.transform, "Visual", sprite, "Objects", Vector3.zero);
+            bool tall = name.StartsWith("Palm") || name.StartsWith("Spire") || name == "Lamp" || name == "Arch";
+            if (tall) Reflect(go.transform, vis);
+            if (name.StartsWith("Palm")) vis.gameObject.AddComponent<AquaScape.WindSway>();
+            if (name.StartsWith("Bush") || name.StartsWith("Fern"))
+            {
+                var sway = vis.gameObject.AddComponent<AquaScape.WindSway>();
+                sway.degrees = 1.2f;
+                sway.speed = 1.3f;
+            }
             if (colliderRadius > 0f) Collider(go, colliderRadius);
             if (glowColor.HasValue) PointLight(go.transform, new Vector3(0, glowHeight, 0), glowColor.Value, 2.4f, 0.8f);
             return Save(go, name);
+        }
+
+        /// <summary>Add a rippling mirror image on the water layer below a tall sprite.</summary>
+        static void Reflect(Transform parent, SpriteRenderer source)
+        {
+            if (source == null || source.sprite == null) return;
+            var r = SpriteChild(parent, "Reflection", null, "Underwater", Vector3.zero);
+            r.sprite = source.sprite;
+            r.sortingOrder = 20;
+            r.spriteSortPoint = SpriteSortPoint.Center;
+            r.gameObject.AddComponent<AquaScape.WaterReflection>().source = source;
         }
 
         static SpriteRenderer SpriteChild(Transform parent, string name, string sprite, string layer, Vector3 pos)
@@ -391,7 +414,7 @@ namespace AquaScape.EditorTools
             go.transform.SetParent(parent, false);
             go.transform.localPosition = pos;
             var sr = go.GetComponent<SpriteRenderer>();
-            sr.sprite = LoadSprite(sprite);
+            if (sprite != null) sr.sprite = LoadSprite(sprite);
             sr.sortingLayerName = layer;
             sr.spriteSortPoint = SpriteSortPoint.Pivot;
             return sr;
@@ -564,7 +587,7 @@ namespace AquaScape.EditorTools
             pc.footDust = Child(fx.footDust, go.transform, new Vector3(0, 0.05f, 0));
 
             // soft helmet lamp (mostly noticeable at night)
-            PointLight(go.transform, new Vector3(0, 0.9f, 0), new Color(0.6f, 0.95f, 1f), 4f, 0.9f);
+            PointLight(go.transform, new Vector3(0, 0.9f, 0), new Color(0.7f, 0.8f, 1f), 3.5f, 0.6f);
             return go;
         }
 
@@ -718,15 +741,7 @@ namespace AquaScape.EditorTools
                 cd.wrapMinX = -15f;
                 cd.wrapMaxX = 95f;
             }
-            for (int i = 0; i < 26; i++)
-            {
-                var sr = SpriteChild(root, "Fish", $"FX/fish_{1 + i % 2}", "Underwater", new Vector3(R(0, 118), R(0, 33), 0));
-                sr.spriteSortPoint = SpriteSortPoint.Center;
-                sr.transform.localScale = Vector3.one * R(0.6f, 1.1f);
-                var f = sr.gameObject.AddComponent<AquaScape.FishSwimmer>();
-                f.area = new Rect(-2, -2, s_w + 4, s_h + 4);
-                f.speed = R(0.8f, 1.6f);
-            }
+            // (wildlife is placed by BuildScenery)
         }
     }
 }
