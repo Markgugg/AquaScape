@@ -96,10 +96,9 @@ namespace AquaScape
         {
             if (_shakeTime <= 0f) return Vector2.zero;
             _shakeTime -= Time.unscaledDeltaTime;
+            // shake gets smaller as the time runs out
             float k = Mathf.Clamp01(_shakeTime / _shakeDuration);
-            float a = _shakeAmp * k * k;
-            float t = Time.unscaledTime * 38f;
-            return new Vector2(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f) * 2f * a;
+            return Random.insideUnitCircle * _shakeAmp * k;
         }
 
         // keeps the camera view inside the level bounds

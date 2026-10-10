@@ -51,14 +51,19 @@ namespace AquaScape
         // fires when the player walks into a new zone
         public event Action<int> ZoneEntered;
 
-        // shader property ids
-        static readonly int ZoneEdgesId = Shader.PropertyToID("_AquaZoneEdges");
-        static readonly int NightId = Shader.PropertyToID("_AquaNight");
-
         void Awake()
         {
             Instance = this;
             PushShaderGlobals();
+        }
+
+        void Start()
+        {
+            // remember how bright each night light is so we can scale it later
+            if (nightLights == null) return;
+            _nightLightBase = new float[nightLights.Length];
+            for (int k = 0; k < nightLights.Length; k++)
+                if (nightLights[k] != null) _nightLightBase[k] = nightLights[k].intensity;
         }
 
         // gets the zone blend value for an x position
@@ -95,9 +100,8 @@ namespace AquaScape
             }
 
             // night lights stay dim in the day and get bright at night
-            if (nightLights != null)
+            if (nightLights != null && _nightLightBase != null)
             {
-                _nightLightBase ??= System.Array.ConvertAll(nightLights, l => l != null ? l.intensity : 0f);
                 for (int k = 0; k < nightLights.Length; k++)
                     if (nightLights[k] != null) nightLights[k].intensity = _nightLightBase[k] * (0.15f + 0.85f * Night);
             }
@@ -124,8 +128,8 @@ namespace AquaScape
         // sends the zone edges and night value to the shaders
         void PushShaderGlobals()
         {
-            Shader.SetGlobalVector(ZoneEdgesId, new Vector4(lagoonToCity.x, lagoonToCity.y, cityToMoon.x, cityToMoon.y));
-            Shader.SetGlobalFloat(NightId, Night);
+            Shader.SetGlobalVector("_AquaZoneEdges", new Vector4(lagoonToCity.x, lagoonToCity.y, cityToMoon.x, cityToMoon.y));
+            Shader.SetGlobalFloat("_AquaNight", Night);
         }
 
         // sets how many particles a system spawns per second

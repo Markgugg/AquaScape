@@ -11,11 +11,6 @@ namespace AquaScape
         // the terrain that makes the land mask
         public TerrainPainter terrain;
 
-        static readonly int MaskTexId = Shader.PropertyToID("_MaskTex");
-        static readonly int MaskRectId = Shader.PropertyToID("_MaskRect");
-
-        MaterialPropertyBlock _block;
-
         void OnEnable()
         {
             if (terrain == null) return;
@@ -32,11 +27,11 @@ namespace AquaScape
         void Apply()
         {
             var sr = GetComponent<SpriteRenderer>();
-            _block ??= new MaterialPropertyBlock();
-            sr.GetPropertyBlock(_block);
-            _block.SetTexture(MaskTexId, terrain.LandMask);
-            _block.SetVector(MaskRectId, terrain.LandMaskRect);
-            sr.SetPropertyBlock(_block);
+            var block = new MaterialPropertyBlock();
+            sr.GetPropertyBlock(block);
+            block.SetTexture("_MaskTex", terrain.LandMask);
+            block.SetVector("_MaskRect", terrain.LandMaskRect);
+            sr.SetPropertyBlock(block);
         }
     }
 }

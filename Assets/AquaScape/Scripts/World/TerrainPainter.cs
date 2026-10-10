@@ -119,8 +119,8 @@ namespace AquaScape
                          : layer == Layer.Grass ? grassFullVariants : null;
             if (mask == 15 && variants != null && variants.Length > 0)
             {
-                // hash the cell so it always picks the same one, plain tiles stay most common
-                int h = Mathf.Abs((d.x * 73856093) ^ (d.y * 19349663)) % (variants.Length * 10);
+                // seed with the cell so it always picks the same one, plain tiles stay most common
+                int h = new System.Random(d.x * 1000 + d.y).Next(variants.Length * 10);
                 if (h < variants.Length) return variants[h];
             }
             return Tiles(layer)[mask];

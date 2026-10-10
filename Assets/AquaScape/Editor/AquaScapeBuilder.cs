@@ -36,7 +36,6 @@ namespace AquaScape.EditorTools
         public static void BuildLevel()
         {
             // project settings and the map
-            AquaSpriteImporter.ResetCache();
             AssetDatabase.Refresh();
             EnsureSortingLayers();
             ConfigureRenderer();
