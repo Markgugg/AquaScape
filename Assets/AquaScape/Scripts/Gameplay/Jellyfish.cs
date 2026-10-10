@@ -87,7 +87,7 @@ namespace AquaScape
                     var terrain = TerrainPainter.Instance;
                     if (terrain != null && !terrain.IsWalkable(terrain.WorldToCell(to)))
                         to = player.transform.position - (Vector3)r * 0.5f;
-                    Bubble.Spawn(player.transform.position, to, 0.5f, 9f);
+                    Bubble.Spawn(player.transform.position, to, 0.5f);   // never expire: a full 100% run stays possible
                 }
             }
             _calmTimer = 1.2f;   // don't double-hit
