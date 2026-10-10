@@ -3,26 +3,25 @@ using UnityEngine.Rendering.Universal;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// A drifting Moonpool jellyfish. It glides around a loop near its spawn
-    /// point; touching it bumps the player back and knocks a few bubbles loose
-    /// (they can be picked up again). A pulse gently repels and calms it for a
-    /// moment, which is how you get past them. Dashing through is also safe.
-    /// </summary>
+    // a jellyfish that floats in a loop and knocks bubbles out of the player on touch
+    // pulsing it pushes it away and calms it for a bit, dashing through is safe too
     public class Jellyfish : PulseTarget
     {
-        [Header("Patrol loop")]
+        // size and speed of the loop it swims in
+        [Header("patrol loop")]
         public Vector2 radius = new Vector2(2f, 1.2f);
         public float speed = 0.45f;
         public bool clockwise;
 
-        [Header("Contact")]
+        // what happens when it touches the player
+        [Header("contact")]
         public float touchRadius = 0.55f;
         public int bubblesKnockedOut = 3;
         public float bumpForce = 7f;
 
-        [Header("Visuals")]
+        [Header("visuals")]
         public SpriteRenderer sprite;
+        // animation frames
         public Sprite[] frames;
         public float fps = 6f;
         public Light2D glow;
@@ -47,14 +46,14 @@ namespace AquaScape
             float dt = Time.deltaTime;
             _calmTimer -= dt;
 
-            // patrol around the loop, slowing right down while calmed
+            // move around the loop, slowing way down while calm
             float pace = _calmTimer > 0f ? 0.15f : 1f;
             _angle += (clockwise ? -1f : 1f) * speed * pace * dt;
             _repel = Vector3.Lerp(_repel, Vector3.zero, dt * 0.8f);
             Vector3 loop = new Vector3(Mathf.Cos(_angle) * radius.x, Mathf.Sin(_angle) * radius.y, 0f);
             transform.position = _center + loop + _repel;
 
-            // animation: flipbook + float bob; dim while calmed
+            // flip through frames, bob up and down and dim while calm
             if (frames != null && frames.Length > 0)
                 sprite.sprite = frames[(int)(Time.time * fps + _center.x) % frames.Length];
             float bob = Mathf.Sin(Time.time * 2f + _center.x) * 0.12f;
@@ -67,6 +66,7 @@ namespace AquaScape
             CheckTouch();
         }
 
+        // bumps the player and drops some of their bubbles if they touch
         void CheckTouch()
         {
             var player = PlayerController.Instance;
@@ -87,12 +87,15 @@ namespace AquaScape
                     var terrain = TerrainPainter.Instance;
                     if (terrain != null && !terrain.IsWalkable(terrain.WorldToCell(to)))
                         to = player.transform.position - (Vector3)r * 0.5f;
-                    Bubble.Spawn(player.transform.position, to, 0.5f);   // never expire: a full 100% run stays possible
+                    // these never expire so you can still get every bubble
+                    Bubble.Spawn(player.transform.position, to, 0.5f);
                 }
             }
-            _calmTimer = 1.2f;   // don't double-hit
+            // stops it from hitting twice in a row
+            _calmTimer = 1.2f;
         }
 
+        // pushes the jellyfish away and calms it down
         public override void OnPulse(Vector2 origin)
         {
             Vector3 away = ((Vector2)transform.position - origin).normalized;

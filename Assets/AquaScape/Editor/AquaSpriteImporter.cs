@@ -5,21 +5,18 @@ using UnityEngine;
 
 namespace AquaScape.EditorTools
 {
-    /// <summary>
-    /// Applies consistent import settings to every generated AquaScape sprite:
-    /// 128 pixels per unit (one tile = one world unit), smooth filtering, no
-    /// compression and per-folder pivots. Pivots / 9-slice borders that differ
-    /// from the defaults come from the sprite_meta*.json files that the art
-    /// scripts in Tools/ArtGen write next to the art.
-    /// </summary>
+    // sets the same import settings on every sprite in the art folder
+    // pivots and borders can be changed by the sprite meta json files next to the art
     public class AquaSpriteImporter : AssetPostprocessor
     {
         const string ArtRoot = "Assets/AquaScape/Art/";
+        // one tile is one world unit
         public const float PixelsPerUnit = 128f;
 
-        // The character frames are 192x224 with the feet 17px above the bottom.
+        // character frames are 192 by 224 with the feet 17 pixels above the bottom
         static readonly Vector2 CharacterPivot = new Vector2(0.5f, 17f / 224f);
 
+        // one sprite entry from the json file
         [System.Serializable] class Entry { public float[] pivot; public float[] border; }
 
         static Dictionary<string, Entry> s_meta;
@@ -30,6 +27,7 @@ namespace AquaScape.EditorTools
             var importer = (TextureImporter)assetImporter;
             string rel = assetPath.Substring(ArtRoot.Length);
 
+            // basic sprite settings
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = PixelsPerUnit;
@@ -47,6 +45,7 @@ namespace AquaScape.EditorTools
             settings.spritePivot = DefaultPivot(rel);
             settings.spriteGenerateFallbackPhysicsShape = false;
 
+            // use the pivot and border from the json if there is one
             if (TryGetMeta(rel, out var e))
             {
                 if (e.pivot != null && e.pivot.Length == 2)
@@ -57,6 +56,7 @@ namespace AquaScape.EditorTools
             importer.SetTextureSettings(settings);
         }
 
+        // default pivot based on the folder
         static Vector2 DefaultPivot(string rel)
         {
             if (rel.StartsWith("Character/")) return CharacterPivot;
@@ -64,31 +64,31 @@ namespace AquaScape.EditorTools
             return new Vector2(0.5f, 0.5f);
         }
 
-        /// <summary>Looks up an entry in any Art/sprite_meta*.json manifest.</summary>
+        // looks up a sprite in the json files
         static bool TryGetMeta(string rel, out Entry entry)
         {
             if (s_meta == null) LoadMeta();
             return s_meta.TryGetValue(rel, out entry);
         }
 
+        // reads every sprite meta json file in the art folder
         static void LoadMeta()
         {
             s_meta = new Dictionary<string, Entry>();
             if (!Directory.Exists(ArtRoot)) return;
             foreach (var file in Directory.GetFiles(ArtRoot, "sprite_meta*.json"))
             {
-                // JsonUtility cannot read dictionaries, so parse the flat
-                // { "path": { ... }, ... } layout with a tiny hand-written reader.
+                // json utility cant read dictionaries so we split it up by hand
                 foreach (var kv in MiniJson.ParseObjectOfObjects(File.ReadAllText(file)))
                     s_meta[kv.Key] = JsonUtility.FromJson<Entry>(kv.Value);
             }
         }
 
-        /// <summary>Re-read manifests on the next import (called by the builder).</summary>
+        // clears the cache so the json gets read again next import
         public static void ResetCache() => s_meta = null;
     }
 
-    /// <summary>Minimal JSON helper: splits a top-level object into key -> raw JSON value.</summary>
+    // tiny json helper that splits the top object into each key and its raw json value
     static class MiniJson
     {
         public static IEnumerable<KeyValuePair<string, string>> ParseObjectOfObjects(string json)
@@ -96,10 +96,13 @@ namespace AquaScape.EditorTools
             int i = json.IndexOf('{') + 1;
             while (i > 0 && i < json.Length)
             {
+                // find the next key in quotes
                 int k0 = json.IndexOf('"', i);
                 if (k0 < 0) yield break;
                 int k1 = json.IndexOf('"', k0 + 1);
                 string key = json.Substring(k0 + 1, k1 - k0 - 1);
+
+                // find the matching closing brace for its value
                 int v0 = json.IndexOf('{', k1);
                 int depth = 0, v1 = v0;
                 for (; v1 < json.Length; v1++)

@@ -2,16 +2,16 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// The Prism Shard of an area: picking it up lets the player light that
-    /// area's beacon. Spins/bobs with a glow so it reads as important.
-    /// </summary>
+    // the shard of an area, picking it up lets the player light that area beacon
     public class PrismShard : MonoBehaviour
     {
+        // which area this shard belongs to
         public int zone;
         public Transform visual;
+        // how close the player has to be to grab it
         public float pickupRadius = 0.9f;
 
+        // bobs and spins the shard and checks if the player is close
         void Update()
         {
             if (visual != null)
@@ -28,6 +28,7 @@ namespace AquaScape
                 Collect();
         }
 
+        // gives the shard to the player and removes it
         void Collect()
         {
             GameManager.Instance?.CollectShard(zone);

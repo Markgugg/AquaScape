@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,32 +13,29 @@ using UnityEngine.Tilemaps;
 
 namespace AquaScape.EditorTools
 {
-    /// <summary>
-    /// One-click scene builder: AquaScape > Build Level.
-    ///
-    /// Reads the hand-designed ASCII map (Assets/AquaScape/Level/level.txt),
-    /// creates tile assets, prefabs, materials, the player's animator, and then
-    /// assembles the whole scene: tilemaps, water, props, gameplay objects,
-    /// lighting, post-processing, audio and UI. Rebuilding is deterministic, so
-    /// the level can be tweaked in level.py / level.txt and rebuilt any time.
-    /// </summary>
+    // reads the level text file and builds the whole scene from it
     public static partial class AquaScapeBuilder
     {
+        // folders and files the builder uses
         const string Root = "Assets/AquaScape/";
         const string Art = Root + "Art/";
         const string ScenePath = Root + "Scenes/AquaScape.unity";
         const string LevelPath = Root + "Level/level.txt";
 
+        // sorting layers in draw order
         static readonly string[] SortingLayers = { "Water", "Underwater", "Ground", "Objects", "FX", "Overhead" };
+        // map letters that are objects and not terrain
         const string ObjectChars = "PoCYSBXOGLJMTtferlkAn";
 
-        // map data (y = 0 is the south row)
+        // map data, y 0 is the south row
         static char[,] s_map;
         static int s_w, s_h;
 
+        // menu button that builds the whole level
         [MenuItem("AquaScape/Build Level", priority = 0)]
         public static void BuildLevel()
         {
+            // project settings and the map
             AquaSpriteImporter.ResetCache();
             AssetDatabase.Refresh();
             EnsureSortingLayers();
@@ -50,12 +46,14 @@ namespace AquaScape.EditorTools
             PlayerSettings.defaultScreenHeight = 1080;
             LoadMap();
 
+            // make the assets
             var tiles = BuildTileAssets();
             var mats = BuildMaterials();
             var fx = BuildParticlePrefabs(mats);
             var prefabs = BuildPrefabs(mats, fx);
             var animator = BuildPlayerAnimator();
 
+            // start a fresh scene and build the world
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var terrain = BuildTerrain(tiles);
@@ -66,22 +64,23 @@ namespace AquaScape.EditorTools
             cam.GetComponent<AquaScape.CameraFollow>().target = player.transform;
             zone.nightLights = new[] { player.GetComponentInChildren<Light2D>() };
 
+            // fill in the level
             PlaceLevelObjects(prefabs, terrain);
             BuildAmbience(fx);
             BuildScenery();
             BuildManagers(prefabs, fx);
             BuildUI();
 
+            // save the scene and add it to the build
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
             Debug.Log("[AquaScape] Level built: " + ScenePath);
         }
 
-        // =====================================================================
-        // Project settings
-        // =====================================================================
+        // project settings
 
+        // adds our sorting layers if they are missing
         static void EnsureSortingLayers()
         {
             var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
@@ -100,7 +99,7 @@ namespace AquaScape.EditorTools
             }
             tagManager.ApplyModifiedProperties();
 
-            // keep our layers in the order listed (after "Default")
+            // keep our layers in the order listed after default
             tagManager.Update();
             layers = tagManager.FindProperty("m_SortingLayers");
             for (int target = 0; target < SortingLayers.Length; target++)
@@ -115,7 +114,7 @@ namespace AquaScape.EditorTools
             tagManager.ApplyModifiedProperties();
         }
 
-        /// <summary>Top-down sorting: things lower on screen draw in front.</summary>
+        // top down sorting so things lower on screen draw in front
         static void ConfigureRenderer()
         {
             var data = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/Settings/Renderer2D.asset");
@@ -126,10 +125,9 @@ namespace AquaScape.EditorTools
             EditorUtility.SetDirty(data);
         }
 
-        // =====================================================================
-        // Level map
-        // =====================================================================
+        // level map
 
+        // reads the level text file into the map grid, flipped so y 0 is the bottom
         static void LoadMap()
         {
             var lines = File.ReadAllLines(LevelPath).Where(l => l.Length > 0).ToArray();
@@ -144,12 +142,10 @@ namespace AquaScape.EditorTools
             }
         }
 
+        // map letter at a cell, outside the map counts as empty
         static char At(int x, int y) => x >= 0 && y >= 0 && x < s_w && y < s_h ? s_map[x, y] : '.';
 
-        /// <summary>
-        /// Terrain under a cell. Object cells take on the terrain of their
-        /// neighbours, so the map can be written with one character per cell.
-        /// </summary>
+        // terrain under a cell, object cells copy the terrain of their neighbours
         static char TerrainAt(int x, int y)
         {
             char c = At(x, y);
@@ -168,10 +164,9 @@ namespace AquaScape.EditorTools
             return g >= plaza ? 'g' : '#';
         }
 
-        // =====================================================================
-        // Tiles + terrain
-        // =====================================================================
+        // tiles and terrain
 
+        // holds all the tile assets
         class TileSet
         {
             public TileBase[] ground = new TileBase[16], grass = new TileBase[16], glass = new TileBase[16];
@@ -179,6 +174,7 @@ namespace AquaScape.EditorTools
             public TileBase solid, marker;
         }
 
+        // makes the tile assets from the tile pictures
         static TileSet BuildTileAssets()
         {
             var set = new TileSet();
@@ -195,6 +191,7 @@ namespace AquaScape.EditorTools
             return set;
         }
 
+        // loads or makes one tile asset
         static Tile MakeTile(string spriteName, Tile.ColliderType collider = Tile.ColliderType.None, string assetName = null)
         {
             string path = Root + "Tiles/" + (assetName ?? spriteName) + ".asset";
@@ -210,11 +207,13 @@ namespace AquaScape.EditorTools
             return tile;
         }
 
+        // builds the tilemaps and paints the terrain from the map
         static AquaScape.TerrainPainter BuildTerrain(TileSet t)
         {
             var gridGo = new GameObject("Terrain", typeof(Grid));
             var painter = gridGo.AddComponent<AquaScape.TerrainPainter>();
 
+            // makes one tilemap layer
             Tilemap Map(string name, string layer, int order, bool visible, Vector3 offset)
             {
                 var go = new GameObject(name, typeof(Tilemap), typeof(TilemapRenderer));
@@ -227,6 +226,7 @@ namespace AquaScape.EditorTools
                 return go.GetComponent<Tilemap>();
             }
 
+            // hidden cell maps and the visible maps
             var half = new Vector3(0.5f, 0.5f, 0f);
             painter.groundCells = Map("Cells_Ground", "Ground", 0, false, Vector3.zero);
             painter.grassCells = Map("Cells_Grass", "Ground", 0, false, Vector3.zero);
@@ -235,6 +235,7 @@ namespace AquaScape.EditorTools
             painter.groundDisplay = Map("Ground", "Ground", 0, true, half);
             painter.grassDisplay = Map("Grass", "Ground", 1, true, half);
 
+            // collision map
             painter.collision = Map("Collision", "Ground", 0, false, Vector3.zero);
             var body = painter.collision.gameObject.AddComponent<Rigidbody2D>();
             body.bodyType = RigidbodyType2D.Static;
@@ -242,6 +243,7 @@ namespace AquaScape.EditorTools
             tc.compositeOperation = Collider2D.CompositeOperation.Merge;
             painter.collision.gameObject.AddComponent<CompositeCollider2D>();
 
+            // give the painter its tiles
             painter.groundTiles = t.ground;
             painter.grassTiles = t.grass;
             painter.glassTiles = t.glass;
@@ -252,6 +254,7 @@ namespace AquaScape.EditorTools
             painter.area = new RectInt(0, 0, s_w, s_h);
             painter.border = 4;
 
+            // paint every map cell
             for (int y = 0; y < s_h; y++)
                 for (int x = 0; x < s_w; x++)
                 {
@@ -265,6 +268,7 @@ namespace AquaScape.EditorTools
             return painter;
         }
 
+        // one big water sprite under everything
         static void BuildWater(AquaScape.TerrainPainter terrain, Materials mats)
         {
             var go = new GameObject("Water", typeof(SpriteRenderer));
@@ -279,10 +283,9 @@ namespace AquaScape.EditorTools
             ws.terrain = terrain;
         }
 
-        // =====================================================================
-        // Camera, light, post-processing
-        // =====================================================================
+        // camera, light and post processing
 
+        // makes the camera that follows the player
         static GameObject BuildCamera()
         {
             var go = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
@@ -303,6 +306,7 @@ namespace AquaScape.EditorTools
             return go;
         }
 
+        // makes the global light, the zone director and post processing
         static AquaScape.ZoneDirector BuildLighting(GameObject cam, Fx fx)
         {
             var lightGo = new GameObject("Global Light 2D", typeof(Light2D));
@@ -311,6 +315,7 @@ namespace AquaScape.EditorTools
             light.intensity = 1f;
             TargetAllLayers(light);
 
+            // how each area looks
             var zoneGo = new GameObject("Zone Director");
             var zd = zoneGo.AddComponent<AquaScape.ZoneDirector>();
             zd.globalLight = light;
@@ -328,7 +333,7 @@ namespace AquaScape.EditorTools
             zd.dayMotes = Object.Instantiate(fx.dayMotes, amb.transform);
             zd.nightFireflies = Object.Instantiate(fx.fireflies, amb.transform);
 
-            // post-processing
+            // post processing
             var volGo = new GameObject("Post Processing", typeof(Volume));
             var vol = volGo.GetComponent<Volume>();
             vol.isGlobal = true;
@@ -336,6 +341,7 @@ namespace AquaScape.EditorTools
             return zd;
         }
 
+        // makes the bloom, vignette and color settings
         static VolumeProfile BuildVolumeProfile()
         {
             string path = Root + "Materials/AquaPost.asset";
@@ -345,6 +351,7 @@ namespace AquaScape.EditorTools
                 profile = ScriptableObject.CreateInstance<VolumeProfile>();
                 AssetDatabase.CreateAsset(profile, path);
             }
+            // clear out the old effects
             foreach (var c in profile.components.ToArray())
             {
                 profile.Remove(c.GetType());
@@ -367,15 +374,15 @@ namespace AquaScape.EditorTools
             return profile;
         }
 
+        // makes a light hit every sorting layer
         public static void TargetAllLayers(Light2D light)
         {
             light.targetSortingLayers = UnityEngine.SortingLayer.layers.Select(l => l.id).ToArray();
         }
 
-        // =====================================================================
-        // Managers, audio, UI
-        // =====================================================================
+        // managers, audio and ui
 
+        // makes the game manager, audio and music
         static void BuildManagers(Prefabs prefabs, Fx fx)
         {
             var root = new GameObject("Game");
@@ -388,6 +395,7 @@ namespace AquaScape.EditorTools
             assets.tileFx = fx.tile;
             assets.poofFx = fx.poof;
 
+            // sound effects
             var audio = new GameObject("Audio");
             audio.transform.SetParent(root.transform);
             var am = audio.AddComponent<AquaScape.AudioManager>();
@@ -410,6 +418,7 @@ namespace AquaScape.EditorTools
                 am.clips.Add(new AquaScape.AudioManager.NamedClip { id = id, clip = clip, volume = quiet.TryGetValue(id, out var v) ? v : 1f });
             }
 
+            // music and ambience
             var music = audio.AddComponent<AquaScape.MusicDirector>();
             AudioClip M(string n) => AssetDatabase.LoadAssetAtPath<AudioClip>(Root + "Audio/Music/" + n + ".wav");
             music.pad = M("music_pad");
@@ -423,6 +432,7 @@ namespace AquaScape.EditorTools
             music.nightAmbience = M("amb_night");
         }
 
+        // loads numbered sound clips
         static AudioClip[] Clips(string prefix, int count)
         {
             var list = new List<AudioClip>();
@@ -434,6 +444,7 @@ namespace AquaScape.EditorTools
             return list.ToArray();
         }
 
+        // makes the event system and the ui manager
         static void BuildUI()
         {
             var es = new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem), typeof(InputSystemUIInputModule));
@@ -453,6 +464,7 @@ namespace AquaScape.EditorTools
             mgr.completeBackground = LoadSprite("UI/complete_bg");
         }
 
+        // makes the font asset once and reuses it after that
         static TMP_FontAsset BuildFontAsset()
         {
             string path = Root + "Fonts/MPLUSRounded_SDF.asset";
@@ -475,10 +487,9 @@ namespace AquaScape.EditorTools
             return fa;
         }
 
-        // =====================================================================
-        // Helpers
-        // =====================================================================
+        // helpers
 
+        // loads a sprite from the art folder
         public static Sprite LoadSprite(string relPath)
         {
             string p = Art + relPath + ".png";
@@ -487,6 +498,7 @@ namespace AquaScape.EditorTools
             return s;
         }
 
+        // loads numbered animation frames
         public static Sprite[] LoadFrames(string prefix, int count)
         {
             var list = new List<Sprite>();
@@ -498,6 +510,7 @@ namespace AquaScape.EditorTools
             return list.ToArray();
         }
 
+        // finds an action in the input actions asset
         static InputActionReference ActionRef(string map, string action)
         {
             foreach (var o in AssetDatabase.LoadAllAssetsAtPath("Assets/Settings/InputSystem_Actions.inputactions"))

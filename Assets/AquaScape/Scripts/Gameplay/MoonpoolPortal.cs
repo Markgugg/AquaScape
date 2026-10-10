@@ -4,21 +4,20 @@ using UnityEngine.Rendering.Universal;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// The level exit. Dormant until the last beacon is lit; then it glows and
-    /// stepping onto it dives the explorer into the Moonpool and ends the level.
-    /// </summary>
+    // the level exit, it wakes up after the last beacon and ends the level when you step in
     public class MoonpoolPortal : MonoBehaviour
     {
         public SpriteRenderer sprite;
         public Sprite activeSprite;
         public Light2D glow;
         public ParticleSystem motes;
+        // how close the player has to be to go in
         public float enterRadius = 0.9f;
 
         public bool Active { get; private set; }
         bool _entered;
 
+        // turns the portal on, only works once
         public void Activate()
         {
             if (Active) return;
@@ -26,6 +25,7 @@ namespace AquaScape
             StartCoroutine(AwakenRoutine());
         }
 
+        // shows the portal on camera and fades its glow in
         IEnumerator AwakenRoutine()
         {
             yield return new WaitForSeconds(0.6f);
@@ -42,6 +42,7 @@ namespace AquaScape
             UIManager.Hint("Step into the Moonpool", 4f);
         }
 
+        // pulses the glow and checks if the player stepped in
         void Update()
         {
             if (Active && glow != null && !_entered)
@@ -56,6 +57,7 @@ namespace AquaScape
                 StartCoroutine(EnterRoutine(player));
         }
 
+        // spins the player down into the pool and finishes the level
         IEnumerator EnterRoutine(PlayerController player)
         {
             _entered = true;
@@ -63,7 +65,7 @@ namespace AquaScape
             AudioManager.Play("portal_enter", 1f, 1f, transform.position);
             GameAssets.Burst(GameAssets.Instance != null ? GameAssets.Instance.sparkleFx : null, transform.position + Vector3.up * 0.3f);
 
-            // spiral the explorer down into the pool
+            // spiral the player down into the pool
             Vector3 start = player.transform.position;
             Transform vis = player.visual;
             for (float t = 0; t < 1.3f; t += Time.deltaTime)

@@ -2,18 +2,15 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// A painted far-distance panorama (sky, skyline, moon) along the north
-    /// edge of the world. It slides slower than the camera horizontally, so it
-    /// reads as very far away.
-    /// </summary>
-    [DefaultExecutionOrder(100)]   // after the camera has moved this frame
+    // far away background picture along the top of the world that scrolls slower than the camera
+    [DefaultExecutionOrder(100)]   // runs after the camera moves
     public class HorizonBackdrop : MonoBehaviour
     {
-        [Tooltip("World x the panorama is centred on when the camera is there too.")]
+        // world x where the picture is centered
         public float anchorX;
+        // how much it moves with the camera
         [Range(0f, 1f)] public float parallax = 0.55f;
-        [Tooltip("0 lagoon (always drawn underneath), 1 city, 2 moonpool.")]
+        // 0 is lagoon and always shows, 1 is city, 2 is moonpool
         public int zone;
 
         float _baseY;
@@ -27,7 +24,7 @@ namespace AquaScape
             float dx = cam.transform.position.x - anchorX;
             transform.position = new Vector3(anchorX + dx * parallax, _baseY, 0f);
 
-            // later zones fade in over the earlier ones as you travel east
+            // later zones fade in over the earlier ones as you go east
             var zd = ZoneDirector.Instance;
             var sr = GetComponent<SpriteRenderer>();
             if (zd == null || sr == null) return;

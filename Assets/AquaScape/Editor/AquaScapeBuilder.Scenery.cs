@@ -1,27 +1,24 @@
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 
 namespace AquaScape.EditorTools
 {
-    /// <summary>
-    /// The scenery pass: far horizon panoramas, one hero landmark per area,
-    /// water-surface details and ambient wildlife (fish in the water, glassy
-    /// fish swimming through the air, butterflies).
-    /// </summary>
+    // scenery, far horizon pictures, landmarks and wildlife
     public static partial class AquaScapeBuilder
     {
-        const float HorizonY = 34.5f;   // must match _HorizonY on the water material
+        const float HorizonY = 34.5f;   // must match the horizon value on the water material
 
+        // builds the backgrounds, landmarks and animals
         static void BuildScenery()
         {
             var root = new GameObject("Scenery").transform;
             var unlit = AssetDatabase.LoadAssetAtPath<Material>(
                 "Packages/com.unity.render-pipelines.universal/Runtime/Materials/Sprite-Unlit-Default.mat");
             var rng = new System.Random(4242);
+            // random number between a and b
             float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
 
-            // ---- far horizon panoramas (one per area, crossfaded by zone)
+            // far horizon pictures, one per area, faded by zone
             string[] names = { "backdrop_lagoon", "backdrop_city", "backdrop_moon" };
             float[] anchors = { 20f, 60f, 100f };
             for (int i = 0; i < 3; i++)
@@ -32,12 +29,12 @@ namespace AquaScape.EditorTools
                 go.transform.SetParent(root);
                 var sr = go.GetComponent<SpriteRenderer>();
                 sr.sprite = sprite;
-                sr.sharedMaterial = unlit;           // painted lighting, ignore the 2D lights
+                sr.sharedMaterial = unlit;           // painted lighting, ignore the 2d lights
                 sr.sortingLayerName = "Water";
                 sr.sortingOrder = 5 + i;
                 const float scale = 1.4f;
                 go.transform.localScale = Vector3.one * scale;
-                // horizon sits 75% down the image; place it on HorizonY
+                // horizon sits 75 percent down the image, put it on the horizon line
                 float h = sprite.bounds.size.y * scale;
                 go.transform.position = new Vector3(anchors[i], HorizonY + 0.25f * h, 0f);
                 var hb = go.AddComponent<AquaScape.HorizonBackdrop>();
@@ -45,8 +42,8 @@ namespace AquaScape.EditorTools
                 hb.zone = i;
             }
 
-            // ---- hero landmarks
-            // Blue Lagoon: floating island with a waterfall, near the north shore
+            // hero landmarks
+            // blue lagoon floating island with a waterfall near the north shore
             var isle = Setpiece(root, "FloatingIsle", "Scenery/floating_isle", new Vector3(33.5f, 23.2f, 0));
             if (isle != null)
             {
@@ -60,10 +57,10 @@ namespace AquaScape.EditorTools
                 bob.amplitude = 0.08f;
                 bob.frequency = 0.6f;
             }
-            // Glass City: glass domes on the water and a needle tower
+            // glass city domes on the water and a needle tower
             Setpiece(root, "GlassDomes", "Scenery/domes", new Vector3(57f, 2.6f, 0));
             Setpiece(root, "NeedleTower", "Scenery/needle_tower", new Vector3(77.5f, 22.4f, 0));
-            // Moonpool: glowing crystals floating over the night water
+            // moonpool glowing crystals floating over the night water
             foreach (var pos in new[] { new Vector3(88f, 23f, 0), new Vector3(106.5f, 24f, 0), new Vector3(111f, 11.5f, 0),
                                         new Vector3(91.5f, 8.5f, 0), new Vector3(118f, 10f, 0), new Vector3(101f, 27.5f, 0) })
             {
@@ -75,7 +72,7 @@ namespace AquaScape.EditorTools
                 PointLight(c.transform, Vector3.zero, new Color(0.7f, 0.6f, 1f), 3f, 0.9f);
             }
 
-            // ---- wildlife
+            // fish swimming in the water
             string[] waterFish = { "koi_orange", "koi_white", "fish_yellow", "fish_blue", "koi_orange", "fish_yellow" };
             for (int i = 0; i < 34; i++)
             {
@@ -98,11 +95,13 @@ namespace AquaScape.EditorTools
                 sw.nightAlpha = 0.3f;
                 sw.area = new Rect(-2, -2, s_w + 4, s_h + 2);
             }
+            // sky fish and butterflies
             AirCreatures(root, "skyfish_aqua", 4, 1.9f, 0.9f, R);
             AirCreatures(root, "skyfish_koi", 4, 2.3f, 0.8f, R);
             AirCreatures(root, "butterfly", 7, 0.9f, 0.9f, R, 10f, new Rect(0, 2, 75, 28));
         }
 
+        // makes flying creatures with a shadow under them
         static void AirCreatures(Transform root, string kind, int count, float height, float speed,
             System.Func<float, float, float> R, float fps = 6f, Rect? area = null)
         {
@@ -130,6 +129,7 @@ namespace AquaScape.EditorTools
             }
         }
 
+        // places a big landmark sprite with a reflection
         static GameObject Setpiece(Transform root, string name, string sprite, Vector3 pos)
         {
             if (AssetDatabase.LoadAssetAtPath<Sprite>(Art + sprite + ".png") == null)

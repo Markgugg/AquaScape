@@ -3,15 +3,14 @@ using UnityEngine;
 
 namespace AquaScape
 {
+    // ground types for footstep sounds
     public enum Surface { Plaza, Grass, Glass }
 
-    /// <summary>
-    /// Plays one-shot sound effects from a small pool of AudioSources.
-    /// Clips are looked up by id (e.g. "pulse", "gate_open"). Sounds emitted in
-    /// the world are panned slightly left/right relative to the camera.
-    /// </summary>
+    // plays sound effects from a pool of audio sources, looked up by id
+    // world sounds get panned a little left or right based on the camera
     public class AudioManager : MonoBehaviour
     {
+        // a sound clip with an id and volume
         [System.Serializable]
         public class NamedClip
         {
@@ -22,18 +21,22 @@ namespace AquaScape
 
         public static AudioManager Instance { get; private set; }
 
-        [Header("Clip library")]
+        [Header("clip library")]
+        // all the sound effects by id
         public List<NamedClip> clips = new List<NamedClip>();
+        // footstep sounds for each surface
         public AudioClip[] footstepPlaza;
         public AudioClip[] footstepGrass;
         public AudioClip[] footstepGlass;
-        [Tooltip("Ascending pentatonic notes, played in order while collecting quickly.")]
+        // rising notes played in order when grabbing bubbles fast
         public AudioClip[] bubbleNotes;
 
-        [Header("Mix")]
+        [Header("mix")]
         [Range(0f, 1f)] public float sfxVolume = 0.9f;
         [Range(0f, 1f)] public float footstepVolume = 0.45f;
+        // seconds between bubbles to keep the combo going
         public float bubbleComboWindow = 0.9f;
+        // how many audio sources to make
         public int poolSize = 16;
 
         readonly Dictionary<string, NamedClip> _lookup = new Dictionary<string, NamedClip>();
@@ -43,6 +46,7 @@ namespace AquaScape
         float _lastBubbleTime = -10f;
         int _lastFootstep = -1;
 
+        // builds the clip lookup and the audio source pool
         void Awake()
         {
             Instance = this;
@@ -59,16 +63,16 @@ namespace AquaScape
             }
         }
 
-        // ------------------------------------------------------------------
-        // Static convenience API (safe to call when no manager exists)
-        // ------------------------------------------------------------------
+        // static helpers, safe to call even if there is no manager
 
+        // plays a sound by id
         public static void Play(string id, float pitch = 1f, float volume = 1f, Vector3? worldPos = null)
         {
             if (Instance == null || !Instance._lookup.TryGetValue(id, out var nc)) return;
             Instance.PlayClip(nc.clip, nc.volume * volume, pitch, worldPos);
         }
 
+        // plays a random footstep for the surface
         public static void PlayFootstep(Surface surface, Vector3 pos)
         {
             if (Instance == null) return;
@@ -84,7 +88,7 @@ namespace AquaScape
             Instance.PlayClip(set[i], Instance.footstepVolume, Random.Range(0.94f, 1.06f), pos);
         }
 
-        /// <summary>Collecting bubbles in quick succession climbs the scale.</summary>
+        // grabbing bubbles quickly plays higher and higher notes
         public static void PlayBubbleNote(Vector3 pos)
         {
             var am = Instance;
@@ -96,6 +100,7 @@ namespace AquaScape
             am.PlayClip(am.bubbleNotes[note], 0.8f, 1f, pos);
         }
 
+        // plays a clip on the next source in the pool
         void PlayClip(AudioClip clip, float volume, float pitch, Vector3? worldPos)
         {
             if (clip == null) return;
@@ -108,6 +113,7 @@ namespace AquaScape
             src.Play();
         }
 
+        // how far left or right to pan a sound
         static float PanFor(Vector3 pos)
         {
             var cam = Camera.main;

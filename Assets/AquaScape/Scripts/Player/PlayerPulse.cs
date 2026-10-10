@@ -3,23 +3,21 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// The Aqua Pulse: an expanding ring of water energy sent out from the
-    /// player. Everything that derives from <see cref="PulseTarget"/> inside the
-    /// radius reacts (clams open, pylons and beacons power up, glass cubes get
-    /// pushed, lanterns light, jellyfish are gently repelled).
-    /// It also floats a "SPACE" prompt over the nearest thing worth pulsing.
-    /// </summary>
+    // sends out a pulse ring that every pulse target in range reacts to
+    // also shows a space prompt over the closest thing worth pulsing
     public class PlayerPulse : MonoBehaviour
     {
+        // how far the pulse reaches
         public float radius = 2.4f;
+        // wait time between pulses
         public float cooldown = 0.5f;
 
-        [Header("Visuals")]
+        [Header("visuals")]
         public SpriteRenderer ring;
         public ParticleSystem burst;
         public SpriteRenderer prompt;
 
+        // how many times the player has pulsed
         public int PulseCount { get; private set; }
 
         float _cooldownTimer;
@@ -32,6 +30,7 @@ namespace AquaScape
             if (prompt != null) prompt.color = new Color(1, 1, 1, 0);
         }
 
+        // fires a pulse if the cooldown is done, returns true if it worked
         public bool TryPulse()
         {
             if (_cooldownTimer > 0f) return false;
@@ -45,7 +44,7 @@ namespace AquaScape
             if (ring != null) StartCoroutine(RingRoutine());
             GetComponent<PlayerController>()?.Squash(new Vector3(1.15f, 0.88f, 1f));
 
-            // copy the list: reacting can disable or destroy targets
+            // copy the list since reacting can disable or destroy targets
             foreach (var target in PulseTarget.All.ToArray())
             {
                 if (target == null || !target.isActiveAndEnabled) continue;
@@ -56,6 +55,7 @@ namespace AquaScape
             return true;
         }
 
+        // grows and fades the ring sprite
         IEnumerator RingRoutine()
         {
             ring.enabled = true;
@@ -80,7 +80,7 @@ namespace AquaScape
             UpdatePrompt();
         }
 
-        /// <summary>Show a floating key prompt above the closest pulse-able object.</summary>
+        // shows a floating key prompt above the closest thing you can pulse
         void UpdatePrompt()
         {
             if (prompt == null) return;

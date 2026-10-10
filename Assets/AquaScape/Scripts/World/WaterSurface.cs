@@ -2,15 +2,13 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// Feeds the land mask from <see cref="TerrainPainter"/> into the water
-    /// material, and rebuilds it whenever the terrain changes (e.g. a bridge).
-    /// Runs in edit mode too so the scene view shows the finished water.
-    /// </summary>
+    // gives the water material the land mask and updates it when the terrain changes
+    // runs in edit mode too so the scene view shows the water
     [ExecuteAlways]
     [RequireComponent(typeof(SpriteRenderer))]
     public class WaterSurface : MonoBehaviour
     {
+        // the terrain that makes the land mask
         public TerrainPainter terrain;
 
         static readonly int MaskTexId = Shader.PropertyToID("_MaskTex");
@@ -30,6 +28,7 @@ namespace AquaScape
             if (terrain != null) terrain.MaskRebuilt -= Apply;
         }
 
+        // sends the mask texture and its world rect to the shader
         void Apply()
         {
             var sr = GetComponent<SpriteRenderer>();

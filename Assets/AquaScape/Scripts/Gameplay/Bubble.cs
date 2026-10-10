@@ -2,24 +2,19 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// Collectible bubble. Bobs gently in place, is pulled toward the player
-    /// once they get close (a little magnet so collecting feels generous) and
-    /// pops with a note that climbs the scale during quick combos.
-    ///
-    /// Bubbles can also be "launched" (out of a clam, or knocked out of the
-    /// player by a jellyfish): they fly along an arc first and can only be
-    /// collected once they land. Dropped bubbles fade away if left too long.
-    /// </summary>
+    // a bubble you can collect, it bobs and gets pulled to the player when close
+    // bubbles can also be launched in a hop and only get picked up once they land
     public class Bubble : MonoBehaviour
     {
+        // distance where the bubble starts flying to the player
         public float magnetRadius = 1.8f;
+        // distance where the bubble gets collected
         public float collectRadius = 0.45f;
         public float bobHeight = 0.08f;
         public Transform visual;
         public SpriteRenderer sprite;
 
-        [Tooltip("Seconds before a dropped bubble disappears (0 = never).")]
+        // seconds before a dropped bubble disappears, 0 means never
         public float lifetime = 0f;
 
         float _phase;
@@ -34,7 +29,7 @@ namespace AquaScape
             _phase = Random.value * 10f;
         }
 
-        /// <summary>Throw the bubble from `from` to `to` along a hop.</summary>
+        // throws the bubble from one spot to another in a hop
         public void Launch(Vector3 from, Vector3 to, float duration, float lifetimeSeconds = 0f)
         {
             _flyFrom = from;
@@ -47,6 +42,7 @@ namespace AquaScape
 
         bool Flying => _flyTime < _flyDuration;
 
+        // handles the bob, the hop, blinking out and the magnet
         void Update()
         {
             _age += Time.deltaTime;
@@ -57,7 +53,8 @@ namespace AquaScape
                 _flyTime += Time.deltaTime;
                 float k = Mathf.Clamp01(_flyTime / _flyDuration);
                 transform.position = Vector3.Lerp(_flyFrom, _flyTo, 1f - (1f - k) * (1f - k));
-                bob += Mathf.Sin(k * Mathf.PI) * 0.9f;   // hop arc
+                // hop arc
+                bob += Mathf.Sin(k * Mathf.PI) * 0.9f;
             }
             if (visual != null) visual.localPosition = new Vector3(0f, 0.35f + bob, 0f);
 
@@ -72,6 +69,7 @@ namespace AquaScape
             if (!Flying) UpdateMagnet();
         }
 
+        // pulls the bubble toward the player and collects it when close enough
         void UpdateMagnet()
         {
             var player = PlayerController.Instance;
@@ -89,6 +87,7 @@ namespace AquaScape
             else _magnetSpeed = 0f;
         }
 
+        // adds the bubble to the score and pops it
         void Collect()
         {
             _collected = true;
@@ -99,7 +98,7 @@ namespace AquaScape
             Destroy(gameObject);
         }
 
-        /// <summary>Spawn a bubble that hops from `from` to `to`.</summary>
+        // spawns a bubble that hops from one spot to another
         public static Bubble Spawn(Vector3 from, Vector3 to, float flight, float lifetimeSeconds = 0f)
         {
             var prefab = GameAssets.Instance != null ? GameAssets.Instance.bubblePrefab : null;

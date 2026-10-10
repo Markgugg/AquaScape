@@ -4,21 +4,21 @@ using UnityEngine.Rendering.Universal;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// The Aqua Beacon of an area. Pulse it while carrying that area's Prism
-    /// Shard to light it: the orb blazes up, a new music layer joins, and the
-    /// way forward opens (a bridge, or the Moonpool portal for the last one).
-    /// </summary>
+    // the beacon of an area, pulse it while holding that area shard to light it
+    // lighting it opens a bridge or the moonpool portal for the last one
     public class Beacon : PulseTarget
     {
+        // which area this beacon belongs to
         public int zone;
         public SpriteRenderer sprite;
         public Sprite litSprite;
         public Light2D glow;
         public ParticleSystem sparkles;
+        // glow strength once lit
         public float litIntensity = 2.4f;
 
-        [Header("Unlocks")]
+        // what lighting this beacon opens up
+        [Header("unlocks")]
         public BridgeBuilder unlocksBridge;
         public MoonpoolPortal unlocksPortal;
 
@@ -29,7 +29,7 @@ namespace AquaScape
 
         void Update()
         {
-            // unlit beacons breathe softly so they read as "important but asleep"
+            // unlit beacons glow softly so they look important but asleep
             if (!IsLit && glow != null)
                 glow.intensity = 0.35f + Mathf.Sin(Time.time * 1.6f) * 0.12f;
 
@@ -41,6 +41,7 @@ namespace AquaScape
             }
         }
 
+        // lights the beacon if the player has the shard, otherwise shakes
         public override void OnPulse(Vector2 origin)
         {
             if (IsLit) return;
@@ -55,6 +56,7 @@ namespace AquaScape
             StartCoroutine(LightRoutine());
         }
 
+        // flashes the beacon on and then unlocks the next thing
         IEnumerator LightRoutine()
         {
             IsLit = true;

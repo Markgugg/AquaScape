@@ -3,26 +3,24 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// Smooth follow camera with velocity look-ahead, level bounds, screen shake,
-    /// a slow drifting pan for the title screen, and short "focus" shots that
-    /// show the player something happening elsewhere (e.g. a bridge forming).
-    /// </summary>
+    // smooth follow camera with look ahead, level bounds, screen shake,
+    // a slow title screen pan and short focus shots on other spots
     [RequireComponent(typeof(Camera))]
     public class CameraFollow : MonoBehaviour
     {
         public static CameraFollow Instance { get; private set; }
 
+        // what the camera follows and how smooth it is
         public Transform target;
         public float smoothTime = 0.22f;
         public float lookAhead = 1.2f;
-        [Tooltip("World-space rectangle the camera view must stay inside.")]
+        // world area the camera view has to stay inside
         public Rect bounds = new Rect(0, 0, 120, 32);
-        [Tooltip("Above this world y the camera starts lifting to show the horizon.")]
+        // above this y the camera lifts up to show the horizon
         public float horizonLiftStart = 23f;
         public float horizonLift = 3.5f;
 
-        [Header("Title screen pan")]
+        [Header("title screen pan")]
         public Vector2 titleFrom = new Vector2(8, 14);
         public Vector2 titleTo = new Vector2(26, 16);
         public float titlePanSeconds = 30f;
@@ -40,6 +38,7 @@ namespace AquaScape
             _cam = GetComponent<Camera>();
         }
 
+        // start on the title spot or right on the player
         void Start()
         {
             if (target != null) _targetBody = target.GetComponent<Rigidbody2D>();
@@ -49,12 +48,14 @@ namespace AquaScape
                 SnapTo(target.position);
         }
 
+        // jumps the camera straight to a point
         void SnapTo(Vector2 p)
         {
             var c = Clamp(p);
             transform.position = new Vector3(c.x, c.y, transform.position.z);
         }
 
+        // picks where the camera wants to be and moves toward it
         void LateUpdate()
         {
             var state = GameManager.Instance != null ? GameManager.Instance.State : GameState.Playing;
@@ -62,7 +63,7 @@ namespace AquaScape
 
             if (state == GameState.Title)
             {
-                // gentle ping-pong drift across the lagoon behind the title UI
+                // slow back and forth drift behind the title screen
                 float t = Mathf.PingPong(Time.time / titlePanSeconds, 1f);
                 desired = Vector2.Lerp(titleFrom, titleTo, Mathf.SmoothStep(0, 1, t));
             }
@@ -76,7 +77,7 @@ namespace AquaScape
                 Vector2 lookTarget = Vector2.ClampMagnitude(vel * 0.25f, 1f) * lookAhead;
                 _look = Vector2.Lerp(_look, lookTarget, Time.deltaTime * 2.5f);
                 desired = (Vector2)target.position + _look + Vector2.up * 0.4f;
-                // near the north shore, lift the view so the distant horizon is visible
+                // near the north shore lift the view so the horizon shows
                 float lift = Mathf.Clamp01((target.position.y - horizonLiftStart) / 6f);
                 desired.y += Mathf.SmoothStep(0f, 1f, lift) * horizonLift;
             }
@@ -90,6 +91,7 @@ namespace AquaScape
             transform.position = pos + (Vector3)ShakeOffset();
         }
 
+        // random offset for screen shake that fades out
         Vector2 ShakeOffset()
         {
             if (_shakeTime <= 0f) return Vector2.zero;
@@ -100,6 +102,7 @@ namespace AquaScape
             return new Vector2(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f) * 2f * a;
         }
 
+        // keeps the camera view inside the level bounds
         Vector2 Clamp(Vector2 p)
         {
             float halfH = _cam.orthographicSize;
@@ -111,16 +114,17 @@ namespace AquaScape
             return p;
         }
 
-        /// <summary>Small screen shake; amplitude in world units.</summary>
+        // small screen shake, amplitude is in world units
         public static void Shake(float amplitude, float duration)
         {
             if (Instance == null) return;
+            // dont let a weaker shake cancel a stronger one
             if (amplitude < Instance._shakeAmp * Mathf.Clamp01(Instance._shakeTime / Mathf.Max(0.01f, Instance._shakeDuration))) return;
             Instance._shakeAmp = amplitude;
             Instance._shakeDuration = Instance._shakeTime = duration;
         }
 
-        /// <summary>Pan to a point for a moment, then return to the player.</summary>
+        // pans to a point for a bit then goes back to the player
         public static void Focus(Vector2 point, float seconds)
         {
             if (Instance == null) return;
@@ -128,6 +132,7 @@ namespace AquaScape
             Instance.StartCoroutine(Instance.FocusRoutine(point, seconds));
         }
 
+        // holds the focus point for some seconds
         IEnumerator FocusRoutine(Vector2 point, float seconds)
         {
             _focus = point;

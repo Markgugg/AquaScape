@@ -3,12 +3,14 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>Raises a bridge once every lantern in the group is lit.</summary>
+    // builds a bridge once every lantern in the group is lit
     public class LanternGroup : MonoBehaviour
     {
         public List<MoonLantern> lanterns = new List<MoonLantern>();
+        // the bridge that appears when all lanterns are lit
         public BridgeBuilder bridge;
 
+        // how many lanterns are lit right now
         public int LitCount
         {
             get
@@ -19,6 +21,7 @@ namespace AquaScape
             }
         }
 
+        // called by a lantern when it lights, shows progress or builds the bridge
         public void OnLanternLit()
         {
             int lit = LitCount;

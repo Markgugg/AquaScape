@@ -3,12 +3,13 @@ using UnityEngine.Rendering.Universal;
 
 namespace AquaScape
 {
-    /// <summary>A crystal pylon that raises a glass bridge when pulsed.</summary>
+    // a crystal pylon that builds a glass bridge when pulsed
     public class BridgePylon : PulseTarget
     {
         public SpriteRenderer sprite;
         public Sprite onSprite;
         public Light2D glow;
+        // the bridge this pylon builds
         public BridgeBuilder bridge;
 
         bool _active;
@@ -21,6 +22,7 @@ namespace AquaScape
                 glow.intensity = _active ? 0.8f + Mathf.Sin(Time.time * 3f) * 0.1f : 0.2f;
         }
 
+        // turns the pylon on and starts the bridge
         public override void OnPulse(Vector2 origin)
         {
             if (_active) return;

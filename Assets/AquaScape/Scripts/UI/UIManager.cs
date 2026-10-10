@@ -1,23 +1,19 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// All of AquaScape's UI: title screen, HUD (bubble counter, beacon
-    /// progress, objective line), toasts and hints, pause menu and the level
-    /// complete screen. The widgets are created in code from a handful of
-    /// glossy sprites so the whole interface shares one consistent style.
-    /// </summary>
+    // builds and runs all the ui like the title, hud, hints, pause and end screen
+    // everything is made in code from a few sprites so it all matches
     public class UIManager : MonoBehaviour
     {
         public static UIManager Instance { get; private set; }
 
-        [Header("Style")]
+        [Header("style")]
+        // font, sprites and colors used by every widget
         public TMP_FontAsset font;
         public Sprite panelSprite, buttonSprite, buttonHoverSprite, pillSprite;
         public Sprite logoSprite, iconBubble, iconShard, iconBeaconOff, iconBeaconOn, completeBackground;
@@ -32,23 +28,21 @@ namespace AquaScape
         Coroutine _toastRoutine, _hintRoutine;
         RectTransform _logo;
 
-        // ------------------------------------------------------------------
-        // Static helpers used by gameplay code
-        // ------------------------------------------------------------------
+        // static helpers for gameplay code
 
+        // shows a big title popup
         public static void Toast(string title, string subtitle)
         {
             if (Instance != null) Instance.ShowToast(title, subtitle);
         }
 
+        // shows a hint at the bottom for some seconds
         public static void Hint(string text, float seconds)
         {
             if (Instance != null) Instance.ShowHint(text, seconds);
         }
 
-        // ------------------------------------------------------------------
-        // Setup
-        // ------------------------------------------------------------------
+        // setup
 
         void Awake()
         {
@@ -56,6 +50,7 @@ namespace AquaScape
             BuildCanvas();
         }
 
+        // hooks into game events and draws the first hud
         void Start()
         {
             var gm = GameManager.Instance;
@@ -68,6 +63,7 @@ namespace AquaScape
             RefreshHud();
         }
 
+        // handles pause and start keys, bobs the logo and updates the objective
         void Update()
         {
             var gm = GameManager.Instance;
@@ -91,6 +87,7 @@ namespace AquaScape
             if (gm.State == GameState.Playing) RefreshObjective();
         }
 
+        // shows the right screen for the new state
         void OnStateChanged(GameState s)
         {
             RefreshHud();
@@ -101,12 +98,14 @@ namespace AquaScape
             if (s == GameState.Complete) FillCompleteScreen();
         }
 
+        // shows the zone name when entering a new area
         void OnZoneEntered(int zone)
         {
             var looks = ZoneDirector.Instance.zones;
             if (zone < looks.Length) ShowToast(looks[zone].title, looks[zone].subtitle);
         }
 
+        // starts the game from the title screen
         void OnPlay()
         {
             AudioManager.Play("ui_click");
@@ -115,10 +114,9 @@ namespace AquaScape
             GetComponent<TutorialHints>()?.Begin();
         }
 
-        // ------------------------------------------------------------------
-        // HUD
-        // ------------------------------------------------------------------
+        // hud
 
+        // updates bubble count, beacon icons and the shard icon
         void RefreshHud()
         {
             var gm = GameManager.Instance;
@@ -131,6 +129,7 @@ namespace AquaScape
             StartCoroutine(Punch(_bubbleText.transform.parent));
         }
 
+        // picks the objective text for the current zone
         void RefreshObjective()
         {
             var gm = GameManager.Instance;
@@ -144,6 +143,7 @@ namespace AquaScape
             _objectiveText.text = $"<color=#0b5fa8>{area}</color>  ·  {goal}";
         }
 
+        // quick scale pop on a widget
         IEnumerator Punch(Transform t)
         {
             for (float k = 0; k < 0.18f; k += Time.unscaledDeltaTime)
@@ -154,9 +154,7 @@ namespace AquaScape
             t.localScale = Vector3.one;
         }
 
-        // ------------------------------------------------------------------
-        // Toasts & hints
-        // ------------------------------------------------------------------
+        // toasts and hints
 
         void ShowToast(string title, string sub)
         {
@@ -175,7 +173,7 @@ namespace AquaScape
             _hintRoutine = StartCoroutine(FadeInOut(_hint, seconds));
         }
 
-        /// <summary>Resize a text's background panel to hug the text.</summary>
+        // resizes the panel behind a text so it fits the text
         static void FitWidth(TextMeshProUGUI a, TextMeshProUGUI b, float padding, float minWidth)
         {
             float w = a.GetPreferredValues(a.text).x;
@@ -187,12 +185,14 @@ namespace AquaScape
             if (b != null) b.rectTransform.sizeDelta = new Vector2(w - padding * 0.5f, b.rectTransform.sizeDelta.y);
         }
 
+        // fades the hint out early
         public void HideHint()
         {
             if (_hintRoutine != null) StopCoroutine(_hintRoutine);
             StartCoroutine(FadeTo(_hint, 0f, 0.3f));
         }
 
+        // fades a group in, waits, then fades it out
         IEnumerator FadeInOut(CanvasGroup g, float hold)
         {
             yield return FadeTo(g, 1f, 0.25f);
@@ -200,6 +200,7 @@ namespace AquaScape
             yield return FadeTo(g, 0f, 0.5f);
         }
 
+        // fades a group alpha to a target
         static IEnumerator FadeTo(CanvasGroup g, float target, float seconds)
         {
             float start = g.alpha;
@@ -211,12 +212,14 @@ namespace AquaScape
             g.alpha = target;
         }
 
+        // white flash when the game starts
         IEnumerator FadeFlash()
         {
             _fade.alpha = 0.8f;
             yield return FadeTo(_fade, 0f, 0.8f);
         }
 
+        // fades a screen on or off and turns its input on or off
         void Show(CanvasGroup g, bool on)
         {
             g.gameObject.SetActive(true);
@@ -225,10 +228,9 @@ namespace AquaScape
             StartCoroutine(FadeTo(g, on ? 1f : 0f, 0.3f));
         }
 
-        // ------------------------------------------------------------------
-        // Complete screen
-        // ------------------------------------------------------------------
+        // complete screen
 
+        // fills in the time, bubbles, beacons and stars
         void FillCompleteScreen()
         {
             var gm = GameManager.Instance;
@@ -242,14 +244,12 @@ namespace AquaScape
                 _stars[i].color = i < stars ? new Color(1f, 0.86f, 0.35f) : new Color(1, 1, 1, 0.25f);
         }
 
-        // ------------------------------------------------------------------
-        // Widget construction
-        // ------------------------------------------------------------------
+        // building widgets
 
+        // makes the canvas and every screen
         void BuildCanvas()
         {
-            // Screen-space camera (not overlay) so the UI shows up in camera
-            // captures/recordings and gets a touch of the bloom glow.
+            // screen space camera so the ui shows in recordings and gets some bloom
             var canvas = gameObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.worldCamera = Camera.main;
@@ -258,12 +258,13 @@ namespace AquaScape
             canvas.sortingOrder = 100;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(2500, 1406);   // ~75% size: let the scenery breathe
+            // big reference size so the ui is smaller and the scenery shows more
+            scaler.referenceResolution = new Vector2(2500, 1406);
             scaler.matchWidthOrHeight = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
             var root = (RectTransform)transform;
 
-            // ---- HUD -------------------------------------------------------
+            // hud
             _hud = Group("HUD", root);
             var pill = Img("BubblePill", _hud.transform, pillSprite, new Vector2(330, 96), new Vector2(0, 1), new Vector2(40 + 165, -40 - 48));
             pill.type = Image.Type.Sliced;
@@ -283,7 +284,7 @@ namespace AquaScape
             pill.color = beacons.color = new Color(1, 1, 1, 0.7f);
             _objectiveText = Text("Text", obj.transform, "", 30, textDark, new Vector2(720, 60), new Vector2(0.5f, 0.5f), Vector2.zero, TextAlignmentOptions.Center);
 
-            // toast (centre-top) and hint (bottom)
+            // toast at the top and hint at the bottom
             _toast = Group("Toast", root);
             _toast.alpha = 0f;
             var toastPanel = Img("Panel", _toast.transform, panelSprite, new Vector2(820, 170), new Vector2(0.5f, 1), new Vector2(0, -230));
@@ -297,7 +298,7 @@ namespace AquaScape
             hintPanel.type = Image.Type.Sliced;
             _hintText = Text("Text", hintPanel.transform, "", 34, textDark, new Vector2(860, 70), new Vector2(0.5f, 0.5f), Vector2.zero, TextAlignmentOptions.Center);
 
-            // ---- Title -----------------------------------------------------
+            // title screen
             _title = Group("Title", root);
             var veil = Img("Veil", _title.transform, null, Vector2.zero, Vector2.zero, Vector2.zero);
             Stretch(veil.rectTransform);
@@ -312,7 +313,7 @@ namespace AquaScape
             Text("Controls", _title.transform, "WASD / Arrows move   ·   SPACE Aqua Pulse   ·   SHIFT dash   ·   ESC pause", 26,
                 new Color(0.1f, 0.3f, 0.55f), new Vector2(1400, 40), new Vector2(0.5f, 0), new Vector2(0, 60), TextAlignmentOptions.Center);
 
-            // ---- Pause -----------------------------------------------------
+            // pause menu
             _pause = Group("Pause", root);
             var dim = Img("Dim", _pause.transform, null, Vector2.zero, Vector2.zero, Vector2.zero);
             Stretch(dim.rectTransform);
@@ -324,7 +325,7 @@ namespace AquaScape
             Button("Restart", pp.transform, "Restart", new Vector2(0, -60), () => GameManager.Instance.Restart());
             Button("Title", pp.transform, "Title Screen", new Vector2(0, -180), () => GameManager.Instance.QuitToTitle());
 
-            // ---- Complete ----------------------------------------------------
+            // complete screen
             _complete = Group("Complete", root);
             var bg = Img("Background", _complete.transform, completeBackground, Vector2.zero, Vector2.zero, Vector2.zero);
             Stretch(bg.rectTransform);
@@ -341,7 +342,7 @@ namespace AquaScape
             Button("Again", cp.transform, "Play Again", new Vector2(0, -190), () => GameManager.Instance.Restart());
             Button("Title", cp.transform, "Title Screen", new Vector2(0, -300), () => GameManager.Instance.QuitToTitle(), 0.85f);
 
-            // full-screen white flash used for transitions
+            // full screen white flash for transitions
             _fade = Group("Flash", root);
             var flash = Img("White", _fade.transform, null, Vector2.zero, Vector2.zero, Vector2.zero);
             Stretch(flash.rectTransform);
@@ -353,6 +354,7 @@ namespace AquaScape
             foreach (var g in new[] { _hud, _pause, _complete, _title }) g.alpha = 0f;
         }
 
+        // makes a full screen canvas group
         CanvasGroup Group(string name, RectTransform parent)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasGroup));
@@ -362,6 +364,7 @@ namespace AquaScape
             return go.GetComponent<CanvasGroup>();
         }
 
+        // stretches a rect to fill its parent
         static void Stretch(RectTransform rt)
         {
             rt.anchorMin = Vector2.zero;
@@ -369,6 +372,7 @@ namespace AquaScape
             rt.offsetMin = rt.offsetMax = Vector2.zero;
         }
 
+        // makes an image widget
         static Image Img(string name, Transform parent, Sprite sprite, Vector2 size, Vector2 anchor, Vector2 pos)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
@@ -384,6 +388,7 @@ namespace AquaScape
             return img;
         }
 
+        // makes a text widget
         TextMeshProUGUI Text(string name, Transform parent, string text, float size, Color color, Vector2 box,
             Vector2 anchor, Vector2 pos, TextAlignmentOptions align)
         {
@@ -404,6 +409,7 @@ namespace AquaScape
             return t;
         }
 
+        // makes a button with a label and hover effect
         void Button(string name, Transform parent, string label, Vector2 pos, UnityEngine.Events.UnityAction onClick, float scale = 1f)
         {
             var img = Img(name, parent, buttonSprite, new Vector2(440, 104) * scale, new Vector2(0.5f, 0.5f), pos);

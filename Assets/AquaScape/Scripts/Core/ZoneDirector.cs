@@ -4,15 +4,11 @@ using UnityEngine.Rendering.Universal;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// The level runs west to east through three areas that share one scene:
-    /// Blue Lagoon (day) -> Glass City (bright afternoon) -> Moonpool (night).
-    /// This component turns the camera's x position into a smooth 0..2 "zone
-    /// blend" and drives the global light, shader globals (water colours) and
-    /// ambient particles from it, so the world changes gradually as you walk.
-    /// </summary>
+    // blends the lagoon, city and moonpool looks based on the camera x position
+    // and drives the light, water colors and ambient particles from it
     public class ZoneDirector : MonoBehaviour
     {
+        // the name and lighting for one zone
         [Serializable]
         public class ZoneLook
         {
@@ -24,34 +20,38 @@ namespace AquaScape
 
         public static ZoneDirector Instance { get; private set; }
 
-        [Tooltip("World x range over which Lagoon fades into Glass City.")]
+        // x range where the lagoon fades into the city
         public Vector2 lagoonToCity = new Vector2(36f, 44f);
-        [Tooltip("World x range over which Glass City fades into the Moonpool night.")]
+        // x range where the city fades into the moonpool night
         public Vector2 cityToMoon = new Vector2(76f, 86f);
 
+        // one look per zone
         public ZoneLook[] zones = new ZoneLook[GameManager.ZoneCount];
         public Light2D globalLight;
 
-        [Header("Ambient particles (follow the camera)")]
+        [Header("ambient particles")]
         public ParticleSystem dayMotes;
         public ParticleSystem nightFireflies;
         public float dayMoteRate = 6f;
         public float fireflyRate = 10f;
 
-        [Header("Lights that only shine at night (e.g. the helmet lamp)")]
+        [Header("night only lights")]
+        // lights like the helmet lamp that get brighter at night
         public Light2D[] nightLights;
         float[] _nightLightBase;
 
-        /// <summary>0 = lagoon, 1 = city, 2 = moonpool (fractional in between).</summary>
+        // 0 is lagoon, 1 is city, 2 is moonpool, with fractions in between
         public float Blend { get; private set; }
-        /// <summary>0..1 how much of the city look is applied.</summary>
+        // 0 to 1 how much city look is applied
         public float City => Mathf.Clamp01(Blend);
-        /// <summary>0..1 how dark / night-time the world currently is.</summary>
+        // 0 to 1 how dark the world is right now
         public float Night => Mathf.Clamp01(Blend - 1f);
         public int PlayerZone { get; private set; } = -1;
 
+        // fires when the player walks into a new zone
         public event Action<int> ZoneEntered;
 
+        // shader property ids
         static readonly int ZoneEdgesId = Shader.PropertyToID("_AquaZoneEdges");
         static readonly int NightId = Shader.PropertyToID("_AquaNight");
 
@@ -61,6 +61,7 @@ namespace AquaScape
             PushShaderGlobals();
         }
 
+        // gets the zone blend value for an x position
         public float BlendAt(float x)
         {
             float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(lagoonToCity.x, lagoonToCity.y, x));
@@ -68,6 +69,7 @@ namespace AquaScape
             return a + b;
         }
 
+        // gets which zone an x position is in
         public int ZoneAt(float x)
         {
             if (x < (lagoonToCity.x + lagoonToCity.y) * 0.5f) return 0;
@@ -75,6 +77,7 @@ namespace AquaScape
             return 2;
         }
 
+        // updates the light, shaders and particles every frame
         void LateUpdate()
         {
             var cam = Camera.main;
@@ -82,7 +85,7 @@ namespace AquaScape
             Blend = BlendAt(cam.transform.position.x);
             PushShaderGlobals();
 
-            // Global light: interpolate between the neighbouring zone looks.
+            // lerp the global light between the two nearest zones
             if (globalLight != null && zones.Length == 3)
             {
                 int i = Mathf.Min(Mathf.FloorToInt(Blend), 1);
@@ -91,6 +94,7 @@ namespace AquaScape
                 globalLight.intensity = Mathf.Lerp(zones[i].lightIntensity, zones[i + 1].lightIntensity, t);
             }
 
+            // night lights stay dim in the day and get bright at night
             if (nightLights != null)
             {
                 _nightLightBase ??= System.Array.ConvertAll(nightLights, l => l != null ? l.intensity : 0f);
@@ -98,10 +102,11 @@ namespace AquaScape
                     if (nightLights[k] != null) nightLights[k].intensity = _nightLightBase[k] * (0.15f + 0.85f * Night);
             }
 
+            // swap day motes for fireflies as night comes in
             SetRate(dayMotes, dayMoteRate * (1f - Night));
             SetRate(nightFireflies, fireflyRate * Night);
 
-            // Announce a new area once the player crosses its midpoint.
+            // announce a new zone once the player crosses its middle
             var player = PlayerController.Instance;
             if (player != null && GameManager.Instance != null && GameManager.Instance.IsPlaying)
             {
@@ -116,12 +121,14 @@ namespace AquaScape
             }
         }
 
+        // sends the zone edges and night value to the shaders
         void PushShaderGlobals()
         {
             Shader.SetGlobalVector(ZoneEdgesId, new Vector4(lagoonToCity.x, lagoonToCity.y, cityToMoon.x, cityToMoon.y));
             Shader.SetGlobalFloat(NightId, Night);
         }
 
+        // sets how many particles a system spawns per second
         static void SetRate(ParticleSystem ps, float rate)
         {
             if (ps == null) return;

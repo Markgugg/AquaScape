@@ -8,18 +8,18 @@ using UnityEngine.Rendering.Universal;
 
 namespace AquaScape.EditorTools
 {
-    /// <summary>Materials, particle effects, prefabs and the player for the builder.</summary>
+    // materials, particle effects, prefabs and the player
     public static partial class AquaScapeBuilder
     {
-        // =====================================================================
-        // Materials
-        // =====================================================================
+        // materials
 
+        // all the materials the builder makes
         class Materials
         {
             public Material water, glowAdd, dotAlpha, sparkleAdd, bubbleAlpha, starAdd, ringAdd;
         }
 
+        // makes the water and particle materials
         static Materials BuildMaterials()
         {
             var m = new Materials();
@@ -34,8 +34,10 @@ namespace AquaScape.EditorTools
             return m;
         }
 
+        // loads a texture from the art folder
         static Texture2D Tex(string rel) => AssetDatabase.LoadAssetAtPath<Texture2D>(Art + rel + ".png");
 
+        // loads or makes a material and sets how it blends
         static Material Mat(string name, Shader shader, Texture tex, bool additive = false)
         {
             string path = Root + "Materials/" + name + ".mat";
@@ -56,35 +58,40 @@ namespace AquaScape.EditorTools
             return mat;
         }
 
-        // =====================================================================
-        // Particle effects
-        // =====================================================================
+        // particle effects
 
+        // all the particle prefabs
         class Fx
         {
             public ParticleSystem pop, sparkle, tile, poof, dashTrail, footDust, pulseBurst, dayMotes, fireflies, beaconSparkles, portalMotes;
         }
 
+        // makes all the particle prefabs
         static Fx BuildParticlePrefabs(Materials m)
         {
             var fx = new Fx();
+            // one shot bursts
             fx.pop = SavePs("FX_BubblePop", Burst(m.bubbleAlpha, 10, 0.25f, 0.5f, 1.8f, 0.12f, 0.22f, new Color(0.8f, 1f, 1f, 0.9f), true, -0.3f));
             fx.sparkle = SavePs("FX_Sparkle", Burst(m.sparkleAdd, 18, 0.5f, 0.9f, 2.6f, 0.2f, 0.45f, new Color(0.7f, 0.98f, 1f), true, -0.2f));
             fx.tile = SavePs("FX_TileSparkle", Burst(m.sparkleAdd, 6, 0.35f, 0.6f, 1.2f, 0.15f, 0.35f, new Color(0.75f, 1f, 1f), true, -0.4f));
             fx.poof = SavePs("FX_Poof", Burst(m.dotAlpha, 16, 0.4f, 0.7f, 1.5f, 0.35f, 0.7f, new Color(0.9f, 0.97f, 1f, 0.8f), true, 0f));
 
+            // player effects
             fx.dashTrail = SavePs("FX_DashTrail", Burst(m.bubbleAlpha, 0, 0.3f, 0.6f, 0.6f, 0.1f, 0.25f, new Color(0.85f, 1f, 1f, 0.9f), false, -0.5f));
             fx.footDust = SavePs("FX_FootDust", Burst(m.dotAlpha, 0, 0.3f, 0.5f, 0.4f, 0.12f, 0.22f, new Color(1f, 1f, 1f, 0.55f), false, -0.1f));
             fx.pulseBurst = SavePs("FX_PulseBurst", Burst(m.bubbleAlpha, 0, 0.4f, 0.7f, 4.2f, 0.1f, 0.22f, new Color(0.8f, 1f, 1f, 0.95f), false, 0f));
 
+            // ambient effects
             fx.dayMotes = SavePs("FX_DayMotes", Ambient(m.sparkleAdd, new Color(1f, 1f, 0.95f, 0.8f), 0.06f, 0.14f, new Vector2(0.15f, 0.25f)));
             fx.fireflies = SavePs("FX_Fireflies", Ambient(m.glowAdd, new Color(0.55f, 0.95f, 1f, 1f), 0.08f, 0.2f, new Vector2(0.05f, 0.18f)));
 
+            // rising columns
             fx.beaconSparkles = SavePs("FX_BeaconSparkles", Column(m.sparkleAdd, new Color(0.7f, 1f, 1f), 7f, 3.5f));
             fx.portalMotes = SavePs("FX_PortalMotes", Column(m.starAdd, new Color(0.85f, 0.85f, 1f), 9f, 1.8f));
             return fx;
         }
 
+        // makes an empty particle system on the fx layer
         static ParticleSystem NewPs(string name, Material mat)
         {
             var go = new GameObject(name, typeof(ParticleSystem));
@@ -96,7 +103,7 @@ namespace AquaScape.EditorTools
             return ps;
         }
 
-        /// <summary>A radial burst (pops, sparkles, trails).</summary>
+        // a burst of particles for pops, sparkles and trails
         static ParticleSystem Burst(Material mat, int count, float lifeMin, float lifeMax, float speed, float sizeMin, float sizeMax,
             Color color, bool oneShot, float gravity)
         {
@@ -132,7 +139,7 @@ namespace AquaScape.EditorTools
             return ps;
         }
 
-        /// <summary>Floating ambient particles spread over the whole view.</summary>
+        // floating particles spread over the whole view
         static ParticleSystem Ambient(Material mat, Color color, float sizeMin, float sizeMax, Vector2 drift)
         {
             var ps = NewPs("ambient", mat);
@@ -167,7 +174,7 @@ namespace AquaScape.EditorTools
             return ps;
         }
 
-        /// <summary>A rising column of sparkles (beacon / portal).</summary>
+        // a rising column of sparkles for the beacon and the portal
         static ParticleSystem Column(Material mat, Color color, float rate, float height)
         {
             var ps = NewPs("column", mat);
@@ -192,6 +199,7 @@ namespace AquaScape.EditorTools
             return ps;
         }
 
+        // fades particles out at the end
         static Gradient FadeOut()
         {
             var g = new Gradient();
@@ -200,6 +208,7 @@ namespace AquaScape.EditorTools
             return g;
         }
 
+        // fades particles in and then out
         static Gradient FadeInOut()
         {
             var g = new Gradient();
@@ -208,6 +217,7 @@ namespace AquaScape.EditorTools
             return g;
         }
 
+        // saves a particle system as a prefab
         static ParticleSystem SavePs(string name, ParticleSystem ps)
         {
             ps.gameObject.name = name;
@@ -216,21 +226,21 @@ namespace AquaScape.EditorTools
             return prefab.GetComponent<ParticleSystem>();
         }
 
-        // =====================================================================
-        // Prefabs
-        // =====================================================================
+        // prefabs
 
+        // all the prefabs the level uses
         class Prefabs
         {
             public GameObject bubble, clam, pylon, beacon, shard, cube, pad, gatePanel, lantern, jelly, portal;
             public Dictionary<char, GameObject[]> decor = new Dictionary<char, GameObject[]>();
         }
 
+        // makes all the gameplay and decor prefabs
         static Prefabs BuildPrefabs(Materials m, Fx fx)
         {
             var p = new Prefabs();
 
-            // ---- decor props (sprite + optional small collider at the base)
+            // decor props with an optional small collider at the base
             p.decor['T'] = new[] { Decor("Palm_1", "Props/palm_1", 0.22f), Decor("Palm_2", "Props/palm_2", 0.22f) };
             p.decor['t'] = new[] { Decor("Bush_1", "Props/bush_1", 0.38f), Decor("Bush_2", "Props/bush_2", 0.38f) };
             p.decor['f'] = new[] { Decor("Flowers_1", "Props/flowers_1", 0f), Decor("Flowers_2", "Props/flowers_2", 0f) };
@@ -241,7 +251,7 @@ namespace AquaScape.EditorTools
             p.decor['A'] = new[] { Decor("Arch", "Props/arch", 0f) };
             p.decor['n'] = new[] { Decor("NightFlower", "Props/nightflower", 0f, new Color(0.6f, 0.6f, 1f), 0.5f) };
 
-            // ---- bubble
+            // bubble
             {
                 var go = new GameObject("Bubble");
                 Shadow(go.transform, 0.45f, 0.35f);
@@ -252,7 +262,7 @@ namespace AquaScape.EditorTools
                 b.sprite = vis;
                 p.bubble = Save(go, "Bubble");
             }
-            // ---- clam
+            // clam
             {
                 var go = new GameObject("BubbleClam");
                 var sr = SpriteChild(go.transform, "Visual", "Props/bubble_clam_closed", "Objects", Vector3.zero);
@@ -263,7 +273,7 @@ namespace AquaScape.EditorTools
                 c.promptOffset = new Vector3(0, 1.3f, 0);
                 p.clam = Save(go, "BubbleClam");
             }
-            // ---- pylon
+            // pylon
             {
                 var go = new GameObject("BridgePylon");
                 var sr = SpriteChild(go.transform, "Visual", "Props/pylon_off", "Objects", Vector3.zero);
@@ -276,7 +286,7 @@ namespace AquaScape.EditorTools
                 py.promptOffset = new Vector3(0, 2.1f, 0);
                 p.pylon = Save(go, "BridgePylon");
             }
-            // ---- beacon
+            // beacon
             {
                 var go = new GameObject("Beacon");
                 var sr = SpriteChild(go.transform, "Visual", "Props/beacon_off", "Objects", Vector3.zero);
@@ -293,7 +303,7 @@ namespace AquaScape.EditorTools
                 bc.reachBonus = 0.6f;
                 p.beacon = Save(go, "Beacon");
             }
-            // ---- shard
+            // shard
             {
                 var go = new GameObject("PrismShard");
                 Shadow(go.transform, 0.5f, 0.4f);
@@ -303,7 +313,7 @@ namespace AquaScape.EditorTools
                 s.visual = vis.transform;
                 p.shard = Save(go, "PrismShard");
             }
-            // ---- glass cube
+            // glass cube
             {
                 var go = new GameObject("GlassCube");
                 var sr = SpriteChild(go.transform, "Visual", "Props/cube", "Objects", Vector3.zero);
@@ -318,7 +328,7 @@ namespace AquaScape.EditorTools
                 cube.promptOffset = new Vector3(0, 1.5f, 0);
                 p.cube = Save(go, "GlassCube");
             }
-            // ---- pressure pad
+            // pressure pad
             {
                 var go = new GameObject("PressurePad");
                 var sr = SpriteChild(go.transform, "Visual", "Props/pad_off", "Ground", Vector3.zero);
@@ -329,7 +339,7 @@ namespace AquaScape.EditorTools
                 pad.glow = PointLight(go.transform, new Vector3(0, 0.1f, 0), new Color(0.5f, 0.95f, 1f), 1.6f, 0f);
                 p.pad = Save(go, "PressurePad");
             }
-            // ---- gate panel
+            // gate panel
             {
                 var go = new GameObject("GatePanel");
                 SpriteChild(go.transform, "Visual", "Props/gate", "Objects", Vector3.zero);
@@ -338,7 +348,7 @@ namespace AquaScape.EditorTools
                 box.offset = new Vector2(0, 0.3f);
                 p.gatePanel = Save(go, "GatePanel");
             }
-            // ---- moon lantern
+            // moon lantern
             {
                 var go = new GameObject("MoonLantern");
                 var sr = SpriteChild(go.transform, "Visual", "Props/lantern_off", "Objects", Vector3.zero);
@@ -351,7 +361,7 @@ namespace AquaScape.EditorTools
                 l.promptOffset = new Vector3(0, 2.4f, 0);
                 p.lantern = Save(go, "MoonLantern");
             }
-            // ---- jellyfish
+            // jellyfish
             {
                 var go = new GameObject("Jellyfish");
                 var shadow = Shadow(go.transform, 0.6f, 0.3f);
@@ -363,7 +373,7 @@ namespace AquaScape.EditorTools
                 j.glow = PointLight(sr.transform, Vector3.zero, new Color(0.85f, 0.5f, 1f), 2f, 0.9f);
                 p.jelly = Save(go, "Jellyfish");
             }
-            // ---- moonpool portal
+            // moonpool portal
             {
                 var go = new GameObject("MoonpoolPortal");
                 var sr = SpriteChild(go.transform, "Visual", "Props/portal_off", "Ground", Vector3.zero);
@@ -379,6 +389,7 @@ namespace AquaScape.EditorTools
             return p;
         }
 
+        // makes a decor prop, tall ones get a reflection and plants sway
         static GameObject Decor(string name, string sprite, float colliderRadius, Color? glowColor = null, float glowHeight = 0f)
         {
             var go = new GameObject(name);
@@ -397,7 +408,7 @@ namespace AquaScape.EditorTools
             return Save(go, name);
         }
 
-        /// <summary>Add a rippling mirror image on the water layer below a tall sprite.</summary>
+        // adds a rippling mirror image on the water under a tall sprite
         static void Reflect(Transform parent, SpriteRenderer source)
         {
             if (source == null || source.sprite == null) return;
@@ -408,6 +419,7 @@ namespace AquaScape.EditorTools
             r.gameObject.AddComponent<AquaScape.WaterReflection>().source = source;
         }
 
+        // makes a child object with a sprite on it
         static SpriteRenderer SpriteChild(Transform parent, string name, string sprite, string layer, Vector3 pos)
         {
             var go = new GameObject(name, typeof(SpriteRenderer));
@@ -420,6 +432,7 @@ namespace AquaScape.EditorTools
             return sr;
         }
 
+        // adds a soft shadow under a floating thing
         static Transform Shadow(Transform parent, float width, float alpha)
         {
             var sr = SpriteChild(parent, "Shadow", "Props/float_shadow", "Ground", Vector3.zero);
@@ -433,6 +446,7 @@ namespace AquaScape.EditorTools
             return holder;
         }
 
+        // adds a small circle collider at the base
         static void Collider(GameObject go, float radius)
         {
             var c = go.AddComponent<CircleCollider2D>();
@@ -440,6 +454,7 @@ namespace AquaScape.EditorTools
             c.offset = new Vector2(0, radius * 0.5f);
         }
 
+        // adds a glowing point light
         static Light2D PointLight(Transform parent, Vector3 pos, Color color, float radius, float intensity)
         {
             var go = new GameObject("Glow", typeof(Light2D));
@@ -456,6 +471,7 @@ namespace AquaScape.EditorTools
             return l;
         }
 
+        // saves an object as a prefab and deletes the scene copy
         static GameObject Save(GameObject go, string name)
         {
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, Root + "Prefabs/" + name + ".prefab");
@@ -463,6 +479,7 @@ namespace AquaScape.EditorTools
             return prefab;
         }
 
+        // places a prefab in the scene
         static GameObject Spawn(GameObject prefab, Vector3 pos, Transform parent)
         {
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
@@ -470,10 +487,9 @@ namespace AquaScape.EditorTools
             return go;
         }
 
-        // =====================================================================
-        // Player
-        // =====================================================================
+        // player
 
+        // makes the player animator with idle and walk
         static AnimatorController BuildPlayerAnimator()
         {
             string path = Root + "Animations/Aqua.controller";
@@ -483,6 +499,7 @@ namespace AquaScape.EditorTools
             ctrl.AddParameter("FaceY", AnimatorControllerParameterType.Float);
             ctrl.AddParameter("Speed", AnimatorControllerParameterType.Float);
 
+            // makes one looping clip from the frames
             AnimationClip Clip(string anim, string dir, float fps, bool footsteps)
             {
                 var frames = LoadFrames($"Character/{anim}_{dir}_", 8);
@@ -497,7 +514,7 @@ namespace AquaScape.EditorTools
                 AnimationUtility.SetAnimationClipSettings(clip, settings);
                 if (footsteps)
                 {
-                    // feet touch down on frames 0 and 4 of the 8-frame cycle
+                    // feet touch down on frames 0 and 4 of the 8 frame cycle
                     AnimationUtility.SetAnimationEvents(clip, new[]
                     {
                         new AnimationEvent { time = 0.01f, functionName = "Footstep" },
@@ -510,6 +527,7 @@ namespace AquaScape.EditorTools
                 return clip;
             }
 
+            // makes a blend tree for down, up and side
             AnimatorState Tree(string name, string anim, float fps, bool footsteps)
             {
                 var state = ctrl.CreateBlendTreeInController(name, out var tree, 0);
@@ -522,6 +540,7 @@ namespace AquaScape.EditorTools
                 return state;
             }
 
+            // switch between idle and walk by speed
             var idle = Tree("Idle", "idle", 8f, false);
             var walk = Tree("Walk", "walk", 14f, true);
             var sm = ctrl.layers[0].stateMachine;
@@ -537,13 +556,16 @@ namespace AquaScape.EditorTools
             return ctrl;
         }
 
+        // makes the player with physics, sprites, pulse and controls
         static GameObject BuildPlayer(AnimatorController animator, Materials m, Fx fx, Prefabs prefabs)
         {
+            // start where the p is in the map
             Vector3 start = Vector3.zero;
             for (int y = 0; y < s_h; y++)
                 for (int x = 0; x < s_w; x++)
                     if (At(x, y) == 'P') start = new Vector3(x + 0.5f, y + 0.3f, 0);
 
+            // physics body
             var go = new GameObject("Player");
             go.transform.position = start;
             var rb = go.AddComponent<Rigidbody2D>();
@@ -555,10 +577,12 @@ namespace AquaScape.EditorTools
             col.radius = 0.26f;
             col.offset = new Vector2(0, 0.12f);
 
+            // body sprite and animator
             var body = SpriteChild(go.transform, "Visual", "Character/idle_down_0", "Objects", Vector3.zero);
             var anim = go.AddComponent<Animator>();
             anim.runtimeAnimatorController = animator;
 
+            // visor glint
             var glint = SpriteChild(body.transform, "Glint", "FX/glint", "Objects", new Vector3(-0.15f, 1.08f, 0));
             glint.sortingOrder = 2;
             glint.spriteSortPoint = SpriteSortPoint.Center;
@@ -566,6 +590,7 @@ namespace AquaScape.EditorTools
             vg.glint = glint;
             vg.body = body;
 
+            // pulse ring and prompt
             var ring = SpriteChild(go.transform, "PulseRing", "FX/ring", "FX", new Vector3(0, 0.3f, 0));
             ring.sharedMaterial = m.ringAdd;
             var prompt = SpriteChild(null, "PulsePrompt", "FX/prompt_space", "FX", start);
@@ -576,6 +601,7 @@ namespace AquaScape.EditorTools
             pulse.prompt = prompt;
             pulse.burst = Child(fx.pulseBurst, go.transform, new Vector3(0, 0.4f, 0));
 
+            // movement and input
             var pc = go.AddComponent<AquaScape.PlayerController>();
             pc.moveAction = ActionRef("Player", "Move");
             pc.pulseAction = ActionRef("Player", "Jump");
@@ -586,11 +612,12 @@ namespace AquaScape.EditorTools
             pc.dashTrail = Child(fx.dashTrail, go.transform, new Vector3(0, 0.5f, 0));
             pc.footDust = Child(fx.footDust, go.transform, new Vector3(0, 0.05f, 0));
 
-            // soft helmet lamp (mostly noticeable at night)
+            // soft helmet lamp, mostly seen at night
             PointLight(go.transform, new Vector3(0, 0.9f, 0), new Color(0.7f, 0.8f, 1f), 3.5f, 0.6f);
             return go;
         }
 
+        // places a particle prefab under a parent
         static ParticleSystem Child(ParticleSystem prefab, Transform parent, Vector3 pos)
         {
             var ps = (ParticleSystem)PrefabUtility.InstantiatePrefab(prefab, parent);
@@ -598,10 +625,9 @@ namespace AquaScape.EditorTools
             return ps;
         }
 
-        // =====================================================================
-        // Level objects
-        // =====================================================================
+        // level objects
 
+        // places all the objects from the map
         static void PlaceLevelObjects(Prefabs p, AquaScape.TerrainPainter terrain)
         {
             var root = new GameObject("Level").transform;
@@ -609,6 +635,7 @@ namespace AquaScape.EditorTools
             decorRoot.SetParent(root);
             var rng = new System.Random(1234);
 
+            // things that get wired up after placing
             var beacons = new AquaScape.Beacon[3];
             var pylons = new List<AquaScape.BridgePylon>();
             var pads = new List<AquaScape.PressurePad>();
@@ -617,11 +644,12 @@ namespace AquaScape.EditorTools
             AquaScape.MoonpoolPortal portal = null;
             var zd = Object.FindAnyObjectByType<AquaScape.ZoneDirector>();
 
+            // go through every map cell
             for (int y = 0; y < s_h; y++)
                 for (int x = 0; x < s_w; x++)
                 {
                     char c = At(x, y);
-                    // jitter decor a little so it does not look grid-aligned
+                    // jitter decor a little so it does not look lined up on the grid
                     var jitter = new Vector3((float)rng.NextDouble() * 0.3f - 0.15f, (float)rng.NextDouble() * 0.2f - 0.1f, 0f);
                     Vector3 pos = new Vector3(x + 0.5f, y + 0.35f, 0f);
                     int zone = zd.ZoneAt(pos.x);
@@ -653,7 +681,7 @@ namespace AquaScape.EditorTools
                     }
                 }
 
-            // bridges: digits in the map, built in order from their west/north end
+            // bridges are digits in the map
             var bridges = new Dictionary<int, AquaScape.BridgeBuilder>();
             for (int id = 1; id <= 4; id++)
             {
@@ -669,13 +697,14 @@ namespace AquaScape.EditorTools
                 bb.cells = cells;
                 bridges[id] = bb;
             }
+            // sorts bridge cells so they build out from a point
             void Order(int id, Vector3 from)
             {
                 if (!bridges.TryGetValue(id, out var bb)) return;
                 bb.cells = bb.cells.OrderBy(c => Vector2.Distance(c, from)).ToList();
             }
 
-            // wire up who opens what (see Tools/LevelGen/level.py)
+            // wire up who opens what, see the level gen script
             if (pylons.Count > 0 && bridges.ContainsKey(1))
             {
                 pylons[0].bridge = bridges[1];
@@ -685,6 +714,7 @@ namespace AquaScape.EditorTools
             if (beacons[1] != null && bridges.ContainsKey(3)) { beacons[1].unlocksBridge = bridges[3]; Order(3, beacons[1].transform.position); }
             if (beacons[2] != null) beacons[2].unlocksPortal = portal;
 
+            // lanterns open the last bridge
             if (lanterns.Count > 0)
             {
                 var lg = new GameObject("LanternGroup").AddComponent<AquaScape.LanternGroup>();
@@ -694,6 +724,7 @@ namespace AquaScape.EditorTools
                 if (bridges.ContainsKey(4)) { lg.bridge = bridges[4]; Order(4, beacons[2] != null ? beacons[2].transform.position : Vector3.zero); }
             }
 
+            // pressure pads open the glass gate
             if (gateCells.Count > 0)
             {
                 var gate = new GameObject("GlassGate").AddComponent<AquaScape.GlassGate>();
@@ -707,16 +738,16 @@ namespace AquaScape.EditorTools
             }
         }
 
-        // =====================================================================
-        // Ambience: clouds, cloud shadows, fish
-        // =====================================================================
+        // ambience
 
+        // makes the drifting clouds and cloud shadows
         static void BuildAmbience(Fx fx)
         {
             var root = new GameObject("Ambience").transform;
             var rng = new System.Random(77);
             float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
 
+            // clouds
             for (int i = 0; i < 6; i++)
             {
                 var sr = SpriteChild(root, "Cloud", $"FX/cloud_{1 + i % 3}", "Overhead", new Vector3(R(-5, 75), i % 2 == 0 ? R(26, 36) : R(-4, 4), 0));
@@ -728,6 +759,7 @@ namespace AquaScape.EditorTools
                 cd.wrapMinX = -20f;
                 cd.wrapMaxX = 100f;
             }
+            // cloud shadows
             for (int i = 0; i < 7; i++)
             {
                 var sr = SpriteChild(root, "CloudShadow", "FX/cloud_shadow", "Overhead", new Vector3(R(-5, 80), R(0, 34), 0));
@@ -741,7 +773,7 @@ namespace AquaScape.EditorTools
                 cd.wrapMinX = -15f;
                 cd.wrapMaxX = 95f;
             }
-            // (wildlife is placed by BuildScenery)
+            // wildlife is placed in build scenery
         }
     }
 }

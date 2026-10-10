@@ -4,18 +4,17 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// A wall of energy-glass panels that dissolves once every linked pressure
-    /// pad is pressed. Each panel has its own collider so the gate can span
-    /// any number of cells.
-    /// </summary>
+    // a glass wall that opens once all its pressure pads are pressed
     public class GlassGate : MonoBehaviour
     {
+        // pads that all need to be pressed
         public List<PressurePad> pads = new List<PressurePad>();
+        // the glass pieces of the wall, each one has its own collider
         public List<SpriteRenderer> panels = new List<SpriteRenderer>();
 
         public bool IsOpen { get; private set; }
 
+        // opens the gate when every pad is pressed
         void Update()
         {
             if (IsOpen || pads.Count == 0) return;
@@ -24,6 +23,7 @@ namespace AquaScape
             StartCoroutine(OpenRoutine());
         }
 
+        // shows the gate on camera, turns off the colliders and fades the panels
         IEnumerator OpenRoutine()
         {
             IsOpen = true;

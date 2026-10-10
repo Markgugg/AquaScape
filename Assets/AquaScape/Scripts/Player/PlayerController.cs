@@ -4,52 +4,54 @@ using UnityEngine.InputSystem;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// Top-down movement for Aqua, the chrome explorer.
-    ///  * smooth acceleration / deceleration on a dynamic Rigidbody2D, so the
-    ///    physics engine handles sliding along walls and pushing glass cubes;
-    ///  * a short dash with a bubble trail and brief invulnerability;
-    ///  * facing + speed parameters for the Animator's 4-way blend trees;
-    ///  * squash-and-stretch on the visual child for game feel;
-    ///  * footstep sounds (fired by animation events) that match the surface.
-    /// </summary>
+    // moves the player around and handles the dash, getting bumped and footsteps
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
+        // the one player in the scene so other scripts can find it
         public static PlayerController Instance { get; private set; }
 
-        [Header("Input (from InputSystem_Actions)")]
+        // input actions from the input system asset
+        [Header("input")]
         public InputActionReference moveAction;
         public InputActionReference pulseAction;
         public InputActionReference dashAction;
 
-        [Header("Movement")]
+        // how fast the player walks and how quickly they speed up and slow down
+        [Header("movement")]
         public float moveSpeed = 4.6f;
         public float acceleration = 42f;
         public float deceleration = 34f;
 
-        [Header("Dash")]
+        // dash speed, how long it lasts and the wait before the next one
+        [Header("dash")]
         public float dashSpeed = 11.5f;
         public float dashDuration = 0.17f;
         public float dashCooldown = 0.65f;
 
-        [Header("Getting bumped")]
+        // how long the player is stunned and safe after a bump
+        [Header("getting bumped")]
         public float stunTime = 0.35f;
         public float invulnerableTime = 1.3f;
 
-        [Header("Visuals")]
+        // art, animation and particle stuff
+        [Header("visuals")]
         public Animator animator;
         public SpriteRenderer body;
         public Transform visual;
         public ParticleSystem dashTrail;
         public ParticleSystem footDust;
 
+        // which way the player is looking
         public Vector2 Facing { get; private set; } = Vector2.down;
         public bool IsDashing => _dashTimer > 0f;
+        // true when nothing can hurt the player
         public bool IsInvulnerable => _invulnTimer > 0f || IsDashing || _frozen;
+        // total distance moved, used for stats
         public float DistanceWalked { get; private set; }
         public bool HasDashed { get; private set; }
 
+        // animator parameter ids
         static readonly int FaceXId = Animator.StringToHash("FaceX");
         static readonly int FaceYId = Animator.StringToHash("FaceY");
         static readonly int SpeedId = Animator.StringToHash("Speed");
@@ -76,6 +78,7 @@ namespace AquaScape
             dashAction?.action.Enable();
         }
 
+        // reads input, counts down timers and updates the visuals
         void Update()
         {
             bool canAct = GameManager.Instance == null || GameManager.Instance.IsPlaying;
@@ -99,6 +102,7 @@ namespace AquaScape
             UpdateVisualFeel();
         }
 
+        // sets the velocity for dashing, being stunned or normal walking
         void FixedUpdate()
         {
             Vector2 v = _rb.linearVelocity;
@@ -120,10 +124,9 @@ namespace AquaScape
             DistanceWalked += v.magnitude * Time.fixedDeltaTime;
         }
 
-        // ------------------------------------------------------------------
-        // Abilities
-        // ------------------------------------------------------------------
+        // abilities
 
+        // starts a dash if the cooldown is done
         void TryDash()
         {
             if (_dashCooldownTimer > 0f) return;
@@ -136,7 +139,7 @@ namespace AquaScape
             Squash(new Vector3(1.25f, 0.8f, 1f));
         }
 
-        /// <summary>Knock the player back (e.g. bumped by a jellyfish).</summary>
+        // knocks the player back, like when a jellyfish hits them
         public void Bump(Vector2 from, float force)
         {
             if (IsInvulnerable) return;
@@ -149,7 +152,7 @@ namespace AquaScape
             CameraFollow.Shake(0.18f, 0.3f);
         }
 
-        /// <summary>Hold the player still for a scripted moment.</summary>
+        // holds the player still for a few seconds
         public void Freeze(float seconds)
         {
             StartCoroutine(FreezeRoutine(seconds));
@@ -164,26 +167,26 @@ namespace AquaScape
 
         public void SetFrozen(bool frozen) => _frozen = frozen;
 
-        // ------------------------------------------------------------------
-        // Presentation
-        // ------------------------------------------------------------------
+        // visuals
 
+        // picks a facing direction from the input
         void UpdateFacing()
         {
             Vector2 v = _input.sqrMagnitude > 0.01f ? _input : Vector2.zero;
             if (v == Vector2.zero) return;
-            // Snap to the dominant axis; favour the side view on diagonals
-            // because it shows the character's silhouette best.
+            // snap to the main axis, diagonals lean toward the side view since it looks best
             Facing = Mathf.Abs(v.x) >= Mathf.Abs(v.y) * 0.8f
                 ? new Vector2(Mathf.Sign(v.x), 0f)
                 : new Vector2(0f, Mathf.Sign(v.y));
         }
 
+        // sends facing and speed to the animator
         void UpdateAnimator()
         {
             if (animator == null) return;
             float speed = _rb.linearVelocity.magnitude;
-            animator.SetFloat(FaceXId, Mathf.Abs(Facing.x));   // side clip is drawn facing right
+            // the side clip is drawn facing right
+            animator.SetFloat(FaceXId, Mathf.Abs(Facing.x));
             animator.SetFloat(FaceYId, Facing.y);
             animator.SetFloat(SpeedId, speed);
             // walk cycle plays a bit faster when moving faster
@@ -191,6 +194,7 @@ namespace AquaScape
             if (body != null) body.flipX = Facing.x < 0f;
         }
 
+        // eases the squash back to normal and blinks after a bump
         void UpdateVisualFeel()
         {
             if (visual == null) return;
@@ -205,9 +209,10 @@ namespace AquaScape
             }
         }
 
+        // squishes the sprite, it springs back on its own
         public void Squash(Vector3 scale) => _squash = scale;
 
-        /// <summary>Called by animation events on the walk clips.</summary>
+        // called by animation events on the walk clips
         public void Footstep()
         {
             if (_rb.linearVelocity.sqrMagnitude < 0.5f) return;

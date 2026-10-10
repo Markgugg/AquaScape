@@ -3,9 +3,10 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>A pearly clam that springs open when pulsed and releases bubbles.</summary>
+    // a clam that pops open when pulsed and lets out bubbles
     public class BubbleClam : PulseTarget
     {
+        // how many bubbles come out
         [SerializeField] int bubbleCount = 5;
         public SpriteRenderer sprite;
         public Sprite openSprite;
@@ -15,6 +16,7 @@ namespace AquaScape
 
         public override bool ShowsPrompt => !_open;
 
+        // opens the clam the first time it gets pulsed
         public override void OnPulse(Vector2 origin)
         {
             if (_open) return;
@@ -46,6 +48,7 @@ namespace AquaScape
                 Bubble.Spawn(transform.position + Vector3.up * 0.2f, to, 0.45f + i * 0.04f);
             }
 
+            // springy wobble back to normal size
             t = 0f;
             while (t < 0.35f)
             {

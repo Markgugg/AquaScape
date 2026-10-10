@@ -2,14 +2,12 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// Scene-wide references to prefabs that gameplay code spawns at runtime
-    /// (bubbles, particle bursts), plus a helper for one-shot effects.
-    /// </summary>
+    // holds prefabs that get spawned during the game like bubbles and particle bursts
     public class GameAssets : MonoBehaviour
     {
         public static GameAssets Instance { get; private set; }
 
+        // prefabs used by other scripts
         public Bubble bubblePrefab;
         public ParticleSystem popFx;
         public ParticleSystem sparkleFx;
@@ -18,7 +16,7 @@ namespace AquaScape
 
         void Awake() => Instance = this;
 
-        /// <summary>Spawn a particle burst prefab that destroys itself when done.</summary>
+        // spawns a one shot particle burst with an optional tint
         public static void Burst(ParticleSystem prefab, Vector3 position, Color? tint = null)
         {
             if (prefab == null) return;

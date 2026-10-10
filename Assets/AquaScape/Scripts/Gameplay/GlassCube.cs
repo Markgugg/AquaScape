@@ -4,25 +4,23 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// Glass City puzzle block. Pulsing it sends it sliding (like on ice) away
-    /// from the player along the dominant axis until something blocks it:
-    /// water, a wall, another cube, a closed gate or a prop. A pressure pad
-    /// catches a sliding cube and locks it in place.
-    ///
-    /// To avoid soft-locks, pulsing a cube that cannot move twice in a row
-    /// sends it back to its starting cell.
-    /// </summary>
+    // a glass puzzle block that slides away from the player when pulsed
+    // it stops at water, walls, other cubes or props, and pressure pads catch it
+    // if it gets pulsed twice while stuck it goes back to its start
     [RequireComponent(typeof(Rigidbody2D))]
     public class GlassCube : PulseTarget
     {
+        // every cube in the scene
         public static readonly List<GlassCube> Cubes = new List<GlassCube>();
 
         public float slideSpeed = 9f;
+        // farthest the cube can slide in one push
         public int maxSlideCells = 12;
         public SpriteRenderer sprite;
 
+        // true once the cube is stuck on a pad
         public bool Locked { get; private set; }
+        // the grid cell the cube is in
         public Vector3Int Cell => TerrainPainter.Instance.WorldToCell(_rb.position);
 
         Rigidbody2D _rb;
@@ -42,6 +40,7 @@ namespace AquaScape
         protected override void OnEnable() { base.OnEnable(); Cubes.Add(this); }
         protected override void OnDisable() { base.OnDisable(); Cubes.Remove(this); }
 
+        // pushes the cube along the main axis away from the pulse
         public override void OnPulse(Vector2 origin)
         {
             if (Locked || _moving) return;
@@ -62,7 +61,7 @@ namespace AquaScape
             StartCoroutine(SlideRoutine(target, pad));
         }
 
-        /// <summary>Walk cell by cell in `dir` until the next cell is blocked.</summary>
+        // steps cell by cell in a direction until the next cell is blocked
         Vector3Int FindSlideTarget(Vector3Int start, Vector3Int dir, out PressurePad pad)
         {
             pad = null;
@@ -73,30 +72,34 @@ namespace AquaScape
                 if (IsBlocked(next)) break;
                 cell = next;
                 pad = PressurePad.At(cell);
-                if (pad != null && !pad.Pressed) break;   // pads catch cubes
+                // pads catch cubes
+                if (pad != null && !pad.Pressed) break;
                 pad = null;
             }
             return cell;
         }
 
+        // checks if a cell has water, a cube or something solid in it
         bool IsBlocked(Vector3Int c)
         {
             var terrain = TerrainPainter.Instance;
             if (!terrain.IsWalkable(c)) return true;
             foreach (var other in Cubes)
                 if (other != this && other.Cell == c) return true;
-            // any other solid collider (props, gates, the player) in that cell
+            // any other solid collider in that cell like props, gates or the player
             Vector2 center = TerrainPainter.CellCenter(c);
             var hits = Physics2D.OverlapBoxAll(center, new Vector2(0.7f, 0.7f), 0f);
             foreach (var h in hits)
             {
                 if (h.isTrigger || h.attachedRigidbody == _rb) continue;
-                if (h.GetComponentInParent<TerrainPainter>() != null) continue; // water edge handled above
+                // water edge is already handled above
+                if (h.GetComponentInParent<TerrainPainter>() != null) continue;
                 return true;
             }
             return false;
         }
 
+        // slides the cube to the target cell and presses the pad if there is one
         IEnumerator SlideRoutine(Vector3Int target, PressurePad pad)
         {
             _moving = true;
@@ -118,6 +121,7 @@ namespace AquaScape
             }
         }
 
+        // small bump animation when the cube cant move
         IEnumerator Nudge(Vector3Int dir)
         {
             AudioManager.Play("beacon_denied", 1.4f, 0.6f, transform.position);
@@ -130,6 +134,7 @@ namespace AquaScape
             sprite.transform.localPosition = basePos;
         }
 
+        // poofs the cube back to where it started
         IEnumerator ResetRoutine()
         {
             _moving = true;
@@ -145,6 +150,7 @@ namespace AquaScape
             UIManager.Hint("The cube was stuck, so it returned to its start", 3f);
         }
 
+        // scales the sprite between two sizes over time
         IEnumerator Scale(float from, float to, float seconds)
         {
             for (float t = 0; t < seconds; t += Time.deltaTime)
@@ -155,6 +161,7 @@ namespace AquaScape
             sprite.transform.localScale = Vector3.one * to;
         }
 
+        // little jiggle after the cube stops
         IEnumerator Wobble()
         {
             for (float t = 0; t < 0.3f; t += Time.deltaTime)

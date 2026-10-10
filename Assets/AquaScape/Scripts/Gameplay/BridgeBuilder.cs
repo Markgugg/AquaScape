@@ -5,21 +5,21 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>
-    /// A glass bridge that does not exist yet. When activated it lays glass
-    /// walkway cells one by one (with rising chimes and sparkles) while the
-    /// camera briefly looks at it, then refreshes the water's shoreline mask.
-    /// </summary>
+    // builds a glass bridge one tile at a time when activated
     public class BridgeBuilder : MonoBehaviour
     {
-        [Tooltip("World cells of the bridge, in the order they should appear.")]
+        // bridge cells in the order they should appear
         public List<Vector2Int> cells = new List<Vector2Int>();
+        // time between each tile
         public float tileInterval = 0.07f;
+        // if true the camera looks at the bridge while it builds
         public bool focusCamera = true;
 
         public bool Built { get; private set; }
+        // fires when the last tile is placed
         public event Action Completed;
 
+        // starts building after a short delay, only works once
         public void Activate(float delay = 0.5f)
         {
             if (Built) return;
@@ -27,6 +27,7 @@ namespace AquaScape
             StartCoroutine(BuildRoutine(delay));
         }
 
+        // middle point of all the bridge cells
         public Vector3 Center
         {
             get
@@ -38,6 +39,7 @@ namespace AquaScape
             }
         }
 
+        // places each glass tile with a sound and sparkle, then updates the water edge
         IEnumerator BuildRoutine(float delay)
         {
             yield return new WaitForSeconds(delay);

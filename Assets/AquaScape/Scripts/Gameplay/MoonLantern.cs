@@ -1,15 +1,15 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 namespace AquaScape
 {
-    /// <summary>A Moonpool lantern, lit by the Aqua Pulse.</summary>
+    // a moonpool lantern that lights up when pulsed
     public class MoonLantern : PulseTarget
     {
         public SpriteRenderer sprite;
         public Sprite litSprite;
         public Light2D glow;
+        // the group this lantern reports to
         public LanternGroup group;
 
         public bool IsLit { get; private set; }
@@ -21,6 +21,7 @@ namespace AquaScape
                 glow.intensity = IsLit ? 1.6f + Mathf.Sin(Time.time * 2f + transform.position.x) * 0.2f : 0f;
         }
 
+        // lights the lantern and tells the group
         public override void OnPulse(Vector2 origin)
         {
             if (IsLit) return;

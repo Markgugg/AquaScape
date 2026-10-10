@@ -4,16 +4,13 @@ using UnityEngine;
 
 namespace AquaScape.EditorTools
 {
-    /// <summary>
-    /// Renders the main camera (including the screen-space-camera UI) into a
-    /// 1920x1080 render texture and saves it under Captures/. Used for the
-    /// progress screenshots and works at any Game view size.
-    /// </summary>
+    // takes a 1080p screenshot of the main camera and saves it in the captures folder
     public static class AquaCapture
     {
         [MenuItem("AquaScape/Capture 1080p Screenshot")]
         public static void CaptureMenu() => Capture("capture_" + System.DateTime.Now.ToString("HHmmss"));
 
+        // renders the camera into a texture and saves it as a png
         public static string Capture(string name, int width = 1920, int height = 1080)
         {
             var cam = Camera.main;
@@ -22,6 +19,7 @@ namespace AquaScape.EditorTools
             var prevTarget = cam.targetTexture;
             var prevActive = RenderTexture.active;
 
+            // draw the camera and read back the pixels
             cam.targetTexture = rt;
             cam.Render();
             RenderTexture.active = rt;
@@ -29,11 +27,13 @@ namespace AquaScape.EditorTools
             tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             tex.Apply();
 
+            // put the camera back how it was
             cam.targetTexture = prevTarget;
             RenderTexture.active = prevActive;
             rt.Release();
             Object.DestroyImmediate(rt);
 
+            // save the file
             Directory.CreateDirectory("Captures");
             string path = Path.Combine("Captures", name + ".png");
             File.WriteAllBytes(path, tex.EncodeToPNG());

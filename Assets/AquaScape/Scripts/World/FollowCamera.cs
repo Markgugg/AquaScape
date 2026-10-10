@@ -2,9 +2,10 @@ using UnityEngine;
 
 namespace AquaScape
 {
-    /// <summary>Keeps ambient particle emitters centred on the camera view.</summary>
+    // keeps ambient particle emitters centered on the camera
     public class FollowCamera : MonoBehaviour
     {
+        // extra offset from the camera position
         public Vector3 offset;
 
         void LateUpdate()
